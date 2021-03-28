@@ -25,7 +25,7 @@ export const session = {
   },
   destroy: () => {
     sessionStore.set({});
-    handleSession("DELETE", value);
+    handleSession("DELETE");
   },
   subscribe: sessionStore.subscribe,
 };

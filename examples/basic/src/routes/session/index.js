@@ -1,6 +1,6 @@
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function post({ context, body }) {
-  context.session.data = JSON.parse(body);
+  context.session.data = body;
 
   return {
     body: context.session.data,

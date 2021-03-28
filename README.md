@@ -175,7 +175,7 @@ export const session = {
   },
   destroy: () => {
     sessionStore.set({});
-    handleSession("DELETE", value);
+    handleSession("DELETE");
   },
   subscribe: sessionStore.subscribe,
 };
@@ -190,7 +190,7 @@ export const session = {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function post({ context, body }) {
-  context.session.data = JSON.parse(body);
+  context.session.data = body;
 
   return {
     body: context.session.data,
@@ -199,7 +199,7 @@ export async function post({ context, body }) {
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ context, body }) {
-  context.session.data = JSON.parse(body);
+  context.session.data = body;
   context.session.refresh = true;
 
   return {
