@@ -1,0 +1,28 @@
+dependencies:
+  salteen: 1.0.0
+devDependencies:
+  '@types/node': 14.14.36
+  typescript: 4.2.3
+lockfileVersion: 5.2
+packages:
+  /@types/node/14.14.36:
+    dev: true
+    resolution:
+      integrity: sha512-kjivUwDJfIjngzbhooRnOLhGYz6oRFi+L+EpMjxroDYXwDw9lHrJJ43E+dJ6KAd3V3WxWAJ/qZE9XKYHhjPOFQ==
+  /salteen/1.0.0:
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-hApiOPudRSzM5aD1dWIWlXL8dPUja8GloMzHMlmDtNiU5brFNyjvQ+SiLLxHVQNeZ2HgKBnzrRHp+BXQiA5vGg==
+  /typescript/4.2.3:
+    dev: true
+    engines:
+      node: '>=4.2.0'
+    hasBin: true
+    resolution:
+      integrity: sha512-qOcYwxaByStAWrBf4x0fibwZvMRG+r4cQoTjbPtUlrWjBHbmCAww1i448U0GJ+3cNNEtebDteo/cHOR3xJ4wEw==
+specifiers:
+  '@types/node': ^14.14.35
+  salteen: ^1.0.0
+  typescript: ^4.2.3
