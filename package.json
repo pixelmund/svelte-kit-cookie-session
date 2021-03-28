@@ -1,6 +1,6 @@
 {
   "name": "svelte-kit-cookie-session",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
     "build": "rimraf ./dist && tsc",
     "dev": "tsc -w",
     "test": "uvu -r ts-node/register tests",
-    "prepublishOnly": "build && test"
+    "prepublishOnly": "npm run build && npm run test"
   },
   "keywords": [
     "SvelteKit",

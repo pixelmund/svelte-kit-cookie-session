@@ -48,6 +48,7 @@ test("session.data = data should set the Set-Cookie Header", () => {
   const session = initializeSession(emptyHeaders, {
     secret: SECRET,
   }) as any;
+  assert.equal(session["Set-Cookie"], "");
   session.data = initialData;
   assert.type(session["Set-Cookie"], "string");
 });
