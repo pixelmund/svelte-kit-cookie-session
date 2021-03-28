@@ -1,4 +1,4 @@
-# Svelte Kit Cookie Session
+# Svelte Kit Cookie Session [![License](https://img.shields.io/github/license/pixelmund/svelte-kit-cookie-session.svg)](https://github.com/pixelmund/svelte-kit-cookie-session) [![Latest Stable Version](https://img.shields.io/npm/v/svelte-kit-cookie-session.svg)](https://www.npmjs.com/package/svelte-kit-cookie-session)
 
 ⚒️ Encrypted "stateless" cookie sessions for SvelteKit
 
