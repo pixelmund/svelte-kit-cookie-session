@@ -13,7 +13,7 @@
     "vite": "^2.1.0"
   },
   "dependencies": {
-    "svelte-kit-cookie-session": "^0.2.0"
+    "svelte-kit-cookie-session": "^0.2.4"
   },
   "type": "module",
   "engines": {

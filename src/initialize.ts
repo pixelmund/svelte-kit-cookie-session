@@ -47,8 +47,9 @@ export default function initializeSession<SessionType = any>(
 
   const cookies = parse(headers.cookie || "", {});
   let sessionCookie: string = cookies[sessionOptions.key] || "";
+  let isInvalidDate: boolean = false;
 
-  let sessionData: SessionType & { expires?: Date };
+  let sessionData: (SessionType & { expires?: Date }) | undefined;
 
   if (sessionCookie.length > 0) {
     const decrypted = decoder(sessionCookie);
@@ -59,14 +60,22 @@ export default function initializeSession<SessionType = any>(
     }
   }
 
+  if (
+    sessionData &&
+    sessionData.expires &&
+    new Date(sessionData.expires).getTime() < new Date().getTime()
+  ) {
+    isInvalidDate = true;
+  }
+
   const session = {
     "Set-Cookie": "",
   };
 
-  return new Proxy(session, {
+  const sessionProxy = new Proxy(session, {
     set: function (obj, prop, value) {
       if (prop === "refresh") {
-        if (!sessionData) return false;
+        if (!sessionData || isInvalidDate) return false;
         sessionCookie = serialize(
           sessionOptions.key,
           encoder(
@@ -114,9 +123,15 @@ export default function initializeSession<SessionType = any>(
     },
     get: function (obj, prop) {
       if (prop === "data") {
-        return sessionData ? sessionData : {};
+        return sessionData && !isInvalidDate ? sessionData : {};
       }
       return (obj as any)[prop];
     },
   }) as any;
+
+  if (isInvalidDate) {
+    sessionProxy.destroy = true;
+  }
+
+  return sessionProxy;
 }
