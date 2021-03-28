@@ -41,6 +41,9 @@ export default function initializeSession<SessionType = any>(
   if (!sessionOptions.cookie.sameSite) {
     sessionOptions.cookie.sameSite = true;
   }
+  if (!sessionOptions.cookie.path) {
+    sessionOptions.cookie.path = "/";
+  }
 
   const cookies = parse(headers.cookie || "", {});
   let sessionCookie: string = cookies[sessionOptions.key] || "";
