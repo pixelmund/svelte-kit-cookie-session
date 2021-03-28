@@ -1,6 +1,34 @@
 # Svelte Kit Cookie Session
 
-Real docs will be coming soon, for now look at these examples:
+⚒️ Encrypted "stateless" cookie sessions for SvelteKit
+
+---
+
+**This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via a encrypted seal. This provides strong client/"stateless" sessions.
+
+The seal stored on the client contains the session data, not your server, making it a "stateless" session from the server point of view. This is a different take than `express-session` where the cookie contains a session ID to then be used to map data on the server-side.
+
+---
+
+**By default the cookie has an ⏰ expiration time of 7 days**, set via [`expires`] which should be a `number` in `days`.
+
+---
+
+## Installation
+
+```bash
+npm i svelte-kit-cookie-session
+
+yarn add svelte-kit-cookie-session
+```
+
+## Usage
+
+You can find real-world examples in the [examples folder](./examples/).
+
+The secret is a private key you must pass at runtime, it has to be at least 32 characters long. Use [Password Generator](https://1password.com/password-generator/) to generate strong passwords.
+
+⚠️ You should always store passwords in secret environment variables on your platform.
 
 ### Initializing
 
