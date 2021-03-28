@@ -1,4 +1,12 @@
 {
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    },
+    "include": ["tests/**/*"]
+  },
+  "exclude": ["tests/**/*"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 
