@@ -140,3 +140,81 @@ export const get: RequestHandler = async function ({ context }) {
   };
 };
 ```
+
+## Advanced Usage
+
+> src/lib/session.ts
+
+**Create a custom session store which handles persisting the session**
+
+```js
+import { session as sessionStore } from "$app/stores";
+
+/** @type {(method: 'POST' | 'PUT' | 'DELETE', value: any) => any} */
+function handleSession(method, value) {
+  fetch("/session", {
+    method,
+    body: method !== "DELETE" ? JSON.stringify(value) : undefined,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-cache",
+  }).then(() => {});
+}
+
+/** @type {{set: (value: any) => void, update: (value: any) => void, destroy: () => void, subscribe: import("svelte/store").Writable['subscribe']}} */
+export const session = {
+  set: (value) => {
+    sessionStore.set(value);
+    handleSession("POST", value);
+  },
+  update: (value) => {
+    sessionStore.set(value);
+    handleSession("PUT", value);
+  },
+  destroy: () => {
+    sessionStore.set({});
+    handleSession("DELETE", value);
+  },
+  subscribe: sessionStore.subscribe,
+};
+```
+
+> src/routes/session/index.js
+
+**This is the corresponding endpoint for the custom session store, which handles the different methods.**
+
+⚠️ You probably want to secure this somehow, im up for suggestions!
+
+```js
+/** @type {import('@sveltejs/kit').RequestHandler} */
+export async function post({ context, body }) {
+  context.session.data = JSON.parse(body);
+
+  return {
+    body: context.session.data,
+  };
+}
+
+/** @type {import('@sveltejs/kit').RequestHandler} */
+export async function put({ context, body }) {
+  context.session.data = JSON.parse(body);
+  context.session.refresh = true;
+
+  return {
+    body: context.session.data,
+  };
+}
+
+/** @type {import('@sveltejs/kit').RequestHandler} */
+export async function del({ context }) {
+  context.session.destroy = true;
+
+  return {
+    body: {
+      ok: true,
+    },
+  };
+}
+```

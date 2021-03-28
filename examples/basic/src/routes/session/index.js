@@ -9,7 +9,7 @@ export async function post({ context, body }) {
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ context, body }) {
-  context.session.data = JSON.parse(body);
+  context.session.data = body;
   context.session.refresh = true;
 
   return {
