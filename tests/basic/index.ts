@@ -44,13 +44,13 @@ test("session.data = data should be set correctly", () => {
   );
 });
 
-test("session.data = data should set the Set-Cookie Header", () => {
+test("session.data = data should set the set-cookie Header", () => {
   const session = initializeSession(emptyHeaders, {
     secret: SECRET,
   }) as any;
-  assert.equal(session["Set-Cookie"], "");
+  assert.equal(session["set-cookie"], "");
   session.data = initialData;
-  assert.type(session["Set-Cookie"], "string");
+  assert.type(session["set-cookie"], "string");
 });
 
 test("session.refresh = true should refresh the session expiration time", async () => {
@@ -72,11 +72,11 @@ test("session.destroy = true should delete the session cookie and data", () => {
   const session = initializeSession({}, { secret: SECRET }) as any;
   session.data = initialData;
 
-  const cookieString = session["Set-Cookie"];
+  const cookieString = session["set-cookie"];
 
   session.destroy = true;
 
-  if (session["Set-Cookie"] === cookieString) {
+  if (session["set-cookie"] === cookieString) {
     throw new Error("Destroy cookie not set correctly");
   }
 });
@@ -85,7 +85,7 @@ test("Session should be initialized with the same data from a given session cook
   const newSession = initializeSession({}, { secret: SECRET }) as any;
 
   newSession.data = initialData;
-  const cookie = newSession["Set-Cookie"].split(";")[0].trim();
+  const cookie = newSession["set-cookie"].split(";")[0].trim();
 
   const sessionWithInitialCookie = initializeSession(
     { Cookie: cookie },
@@ -109,7 +109,7 @@ test("Session should only decrypt data with the same secret and throw an error o
   const newSession = initializeSession({}, { secret: SECRET }) as any;
 
   newSession.data = initialData;
-  const cookie = newSession["Set-Cookie"].split(";")[0].trim();
+  const cookie = newSession["set-cookie"].split(";")[0].trim();
 
   assert.throws(() => {
     const sessionWithWrongSecret = initializeSession(

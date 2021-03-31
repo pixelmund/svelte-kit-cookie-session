@@ -79,7 +79,7 @@ export default function initializeSession<SessionType = any>(
   }
 
   const session = {
-    "Set-Cookie": "",
+    "set-cookie": "",
   };
 
   const sessionProxy = new Proxy(session, {
@@ -97,7 +97,7 @@ export default function initializeSession<SessionType = any>(
           encoder(JSON.stringify(sessionData)),
           sessionOptions.cookie
         );
-        obj["Set-Cookie"] = sessionCookie;
+        obj["set-cookie"] = sessionCookie;
         return true;
       }
       if (prop === "destroy") {
@@ -108,7 +108,7 @@ export default function initializeSession<SessionType = any>(
           maxAge: undefined,
           expires: new Date(Date.now() - 360000000),
         });
-        obj["Set-Cookie"] = sessionCookie;
+        obj["set-cookie"] = sessionCookie;
         return true;
       }
       if (prop === "data") {
@@ -131,7 +131,7 @@ export default function initializeSession<SessionType = any>(
           encoder(JSON.stringify(sessionData)),
           sessionOptions.cookie
         );
-        obj["Set-Cookie"] = sessionCookie;
+        obj["set-cookie"] = sessionCookie;
       }
       return true;
     },
