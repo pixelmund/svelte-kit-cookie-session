@@ -1,6 +1,6 @@
 {
   "name": "svelte-kit-cookie-session",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
   "repository": {
     "type": "git",
