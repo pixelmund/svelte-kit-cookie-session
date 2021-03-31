@@ -24,7 +24,7 @@ yarn add svelte-kit-cookie-session
 
 ## Usage
 
-You can find real-world examples in the [examples folder](./examples/).
+You can find a real-world example in this [repository](https://github.com/pixelmund/sveltekit-cookie-session-example).
 
 The secret is a private key you must pass at runtime, it has to be at least 32 characters long. Use [Password Generator](https://1password.com/password-generator/) to generate strong passwords.
 
