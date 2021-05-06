@@ -1,13 +1,13 @@
 {
   "name": "svelte-kit-cookie-session",
-  "version": "0.3.8",
+  "version": "0.4.0",
   "description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
   "repository": {
     "type": "git",
     "url": "https://github.com/pixelmund/svelte-kit-cookie-session.git"
   },
-  "main": "dist/index.js",
   "module": "dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "dev": "tsc -w",

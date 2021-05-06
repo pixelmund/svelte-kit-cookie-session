@@ -37,32 +37,34 @@ The secret is a private key you must pass at runtime, it has to be at least 32 c
 ```js
 import { initializeSession } from "svelte-kit-cookie-session";
 
-/** @type {import('@sveltejs/kit').GetContext} */
-export async function getContext({ headers }) {
-  const session = initializeSession(headers, {
+/** @type {import('@sveltejs/kit').GetSession} */
+export async function getSession({ locals }) {
+  return locals.session.data;
+}
+
+/** @type {import('@sveltejs/kit').Handle} */
+export async function handle({ request, render }) {
+  
+  const session = initializeSession(request.headers, {
     secret: "SOME_SECRET_AT_LEAST_32_CHARACTERS_LONG",
     cookie: { path: "/" },
   });
 
-  return {
-    session,
-  };
-}
+  request.locals.session = session;
 
-/** @type {import('@sveltejs/kit').GetSession} */
-export async function getSession({ context }) {
-  return context.session.data;
-}
-
-/** @type {import('@sveltejs/kit').Handle} */
-export async function handle(request, render) {
   const response = await render(request);
+
+  /** `session` is a Proxy, after the svelte kit renderer does it job, it will contain a set-cookie header if you set the session in an endpoint */
+
+  if (!session || session?.["set-cookie"].length === 0) {
+    return response;
+  }
 
   return {
     ...response,
     headers: {
       ...response.headers,
-      ...request.context.session,
+      ...session,
     },
   };
 }
@@ -74,11 +76,11 @@ export async function handle(request, render) {
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function post({ context, body }) {
-  context.session.data = body;
+export async function post({ locals, body }) {
+  locals.session.data = body;
 
   return {
-    body: context.session.data,
+    body: locals.session.data,
   };
 }
 ```
@@ -89,8 +91,8 @@ export async function post({ context, body }) {
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function del({ context }) {
-  context.session.destroy = true;
+export async function del({ locals }) {
+  locals.session.destroy = true;
 
   return {
     body: {
@@ -106,12 +108,12 @@ export async function del({ context }) {
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function put({ context, body }) {
-  context.session.data = body;
-  context.session.refresh = true;
+export async function put({ locals, body }) {
+  locals.session.data = body;
+  locals.session.refresh = true;
 
   return {
-    body: context.session.data,
+    body: locals.session.data,
   };
 }
 ```
@@ -164,27 +166,27 @@ export const session = {
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function post({ context, body }) {
-  context.session.data = body;
+export async function post({ locals, body }) {
+  locals.session.data = body;
 
   return {
-    body: context.session.data,
+    body: locals.session.data,
   };
 }
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function put({ context, body }) {
-  context.session.data = body;
-  context.session.refresh = true;
+export async function put({ locals, body }) {
+  locals.session.data = body;
+  locals.session.refresh = true;
 
   return {
-    body: context.session.data,
+    body: locals.session.data,
   };
 }
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function del({ context }) {
-  context.session.destroy = true;
+export async function del({ locals }) {
+  locals.session.destroy = true;
 
   return {
     body: {

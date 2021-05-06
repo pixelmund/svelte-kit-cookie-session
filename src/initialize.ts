@@ -13,7 +13,7 @@ interface SessionOptions {
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
 }
 
-export default function initializeSession<SessionType = any>(
+export function initializeSession<SessionType = any>(
   headers: Record<string, string>,
   options: SessionOptions
 ): { data?: SessionType & { expires: Date } } {
