@@ -86,7 +86,7 @@ export default function initializeSession<SessionType = any>(
     set: function (obj, prop, value) {
       if (prop === "refresh") {
         if (!sessionData || isInvalidDate) {
-          return false;
+          return true;
         }
         sessionData = {
           ...sessionData,
@@ -101,7 +101,7 @@ export default function initializeSession<SessionType = any>(
         return true;
       }
       if (prop === "destroy") {
-        if (sessionCookie.length === 0) return false;
+        if (sessionCookie.length === 0) return true;
         sessionData = undefined;
         sessionCookie = serialize(sessionOptions.key, "0", {
           ...sessionOptions.cookie,
