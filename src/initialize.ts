@@ -16,7 +16,13 @@ interface SessionOptions {
 export function initializeSession<SessionType = any>(
   headers: Record<string, string>,
   options: SessionOptions
-): { data?: SessionType & { expires: Date } } {
+): {
+  data: SessionType & {
+    expires: Date;
+  };
+  refresh: true;
+  destroy: true;
+} {
   const key = options.key || "kit.session";
   const expires = options.expires || daysToMaxage(7);
 
