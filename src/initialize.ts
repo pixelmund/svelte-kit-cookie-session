@@ -78,9 +78,7 @@ export function initializeSession<SessionType = any>(
     isInvalidDate = true;
   }
 
-  const session = {
-    "set-cookie": "",
-  };
+  const session: { "set-cookie"?: string } = {};
 
   const sessionProxy = new Proxy(session, {
     set: function (obj, prop, value) {

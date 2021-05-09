@@ -54,9 +54,9 @@ export async function handle({ request, render }) {
 
   const response = await render(request);
 
-  /** `session` is a Proxy, after the svelte kit renderer does it job, it will contain a set-cookie header if you set the session in an endpoint */
+  /** `session` is a Proxy, after the svelte kit renderer does it job, it will contain a optional set-cookie header if you set the session in an endpoint */
 
-  if (!session || session?.["set-cookie"].length === 0) {
+  if (!session["set-cookie"]) {
     return response;
   }
 
