@@ -111,7 +111,6 @@ export async function del({ locals }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ locals, body }) {
-  locals.session.data = body;
   locals.session.refresh = true;
 
   return {
