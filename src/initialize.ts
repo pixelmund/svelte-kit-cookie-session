@@ -24,7 +24,7 @@ export function initializeSession<SessionType = any>(
   destroy: true;
 } {
   const key = options.key || "kit.session";
-  const expires = options.expires || daysToMaxage(7);
+  const expires = daysToMaxage(options.expires ?? 7);
 
   //** This is mainly for testing purposes */
   let changedSecrets: boolean = false;

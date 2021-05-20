@@ -72,6 +72,8 @@ export async function handle({ request, render }) {
 
 ### Setting The Session
 
+`If the session already exists, the data get's updated but the expiration time stays the same`
+
 > src/routes/login.ts
 
 ```js
@@ -102,7 +104,7 @@ export async function del({ locals }) {
 }
 ```
 
-### Refreshing the Session with new Data but keep the expiration date
+### Refresh the session with the same data but renew the expiration date.
 
 > src/routes/refresh.ts
 
