@@ -6,7 +6,7 @@ let initialSecret: string;
 let encoder: (value: string) => string | undefined;
 let decoder: (value: string) => string | undefined;
 
-interface SessionOptions {
+export interface SessionOptions {
   key?: string;
   secret: string;
   expires?: number;
