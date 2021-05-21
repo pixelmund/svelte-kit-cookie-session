@@ -13,16 +13,18 @@ export interface SessionOptions {
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
 }
 
-export function initializeSession<SessionType = any>(
-  headers: Record<string, string>,
-  options: SessionOptions
-): {
+export interface Session<SessionType = Record<string, any>> {
   data: SessionType & {
     expires: Date;
   };
   refresh: true;
   destroy: true;
-} {
+}
+
+export function initializeSession<SessionType = Record<string, any>>(
+  headers: Record<string, string>,
+  options: SessionOptions
+): Session<SessionType> {
   const key = options.key || "kit.session";
   const expires = daysToMaxage(options.expires ?? 7);
 

@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { initializeSession } from "../../src";
+import { handleSession, initializeSession } from "../../src";
 
 const emptyHeaders = {};
 const SECRET = "A_VERY_SECRET_SECRET_32_CHARS_LONG";
@@ -118,7 +118,7 @@ test("if the session exists setting session.data should update the data but keep
     { secret: SECRET }
   );
 
-  sessionWithInitialCookie.data = {...initialData, username: 'mike'};
+  sessionWithInitialCookie.data = {...initialData, ...sessionWithInitialCookie.data, username: 'mike'};
 
   const sessionData = sessionWithInitialCookie.data;
 
