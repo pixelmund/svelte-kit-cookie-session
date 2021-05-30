@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { initializeSession } from "../../src";
+import { handleSession, initializeSession } from "../../src";
 
 const emptyHeaders = {};
 const SECRET = "A_VERY_SECRET_SECRET_32_CHARS_LONG";
@@ -103,6 +103,48 @@ test("Session should be initialized with the same data from a given session cook
     initialData,
     "Data should be set correctly"
   );
+});
+
+test("if the session exists setting session.data should update the data but keep the expiration date", async () => {
+  const oldSession = initializeSession({}, { secret: SECRET }) as any;
+
+  oldSession.data = initialData;
+  const cookie = oldSession["set-cookie"].split(";")[0].trim();
+
+  await sleep(1500);
+
+  const sessionWithInitialCookie = initializeSession(
+    { Cookie: cookie },
+    { secret: SECRET }
+  );
+
+  sessionWithInitialCookie.data = {...initialData, ...sessionWithInitialCookie.data, username: 'mike'};
+
+  const sessionData = sessionWithInitialCookie.data;
+
+  assert.equal(
+    {
+      username: sessionData.username,
+      email: sessionData.email,
+      theme: sessionData.theme,
+      lang: sessionData.lang,
+    },
+    {...initialData, username: 'mike'},
+    "Data should be set correctly"
+  );
+
+  if (new Date(oldSession.data.expires).getTime() !== new Date(sessionData.expires).getTime()) {
+    throw new Error("Expires should not change");
+  }
+
+  const oldMaxAge = oldSession["set-cookie"].split(";")[1].trim().replace('Max-Age=', '');
+  const newMaxAge = sessionWithInitialCookie["set-cookie"].split(";")[1].trim().replace('Max-Age=', '');
+
+  if(newMaxAge < oldMaxAge){
+    // OK
+  }else {
+    throw new Error("Session cookie should have the correct max age after updating");
+  }
 });
 
 test("Session should only decrypt data with the same secret and throw an error otherwise", () => {

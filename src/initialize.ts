@@ -6,25 +6,27 @@ let initialSecret: string;
 let encoder: (value: string) => string | undefined;
 let decoder: (value: string) => string | undefined;
 
-interface SessionOptions {
+export interface SessionOptions {
   key?: string;
   secret: string;
   expires?: number;
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
 }
 
-export type PublicSession<SessionType = any> = {
-  data: SessionType & { expires?: Date };
+export interface Session<SessionType = Record<string, any>> {
+  data: SessionType & {
+    expires: Date;
+  };
   refresh: true;
   destroy: true;
-};
+}
 
-export function initializeSession<SessionType = any>(
+export function initializeSession<SessionType = Record<string, any>>(
   headers: Record<string, string>,
   options: SessionOptions
-): PublicSession<SessionType> {
+): Session<SessionType> {
   const key = options.key || "kit.session";
-  const expires = options.expires || daysToMaxage(7);
+  const expires = daysToMaxage(options.expires ?? 7);
 
   //** This is mainly for testing purposes */
   let changedSecrets: boolean = false;

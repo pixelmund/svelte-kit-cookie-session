@@ -1,6 +1,6 @@
 {
   "name": "svelte-kit-cookie-session",
-  "version": "0.4.3",
+  "version": "1.0.0",
   "description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
     "salteen": "^1.0.0"
   },
   "devDependencies": {
-    "@sveltejs/kit": "^1.0.0-next.65",
+    "@sveltejs/kit": "^1.0.0-next.108",
     "@types/node": "^14.14.35",
     "rimraf": "^3.0.2",
     "svelte": "^3.35.0",

@@ -32,7 +32,43 @@ The secret is a private key you must pass at runtime, it has to be at least 32 c
 
 ### Initializing
 
+#### There are two ways to initialize the session, one is doing it manually the other one is a higher-order-function
+
 > src/hooks.ts || src/hooks/index.ts
+
+`Suggested way`
+
+```js
+import { handleSession } from "svelte-kit-cookie-session";
+
+/** @type {import('@sveltejs/kit').GetSession} */
+export async function getSession({ locals }) {
+  return locals.session.data;
+}
+
+// You can do it like this, without passing a own handle function
+export const handle = handleSession({
+  secret: "SOME_SECRET_SECRET_32_CHARS_LONG",
+});
+
+// Or pass your handle function as second argument to handleSession
+
+export const handle = handleSession(
+  {
+    secret: "SOME_SECRET_SECRET_32_CHARS_LONG",
+  },
+  ({ request, render }) => {
+    // request.locals is populated with the session `request.locals.session`
+
+    // Do anything you want here
+    return render(request);
+  }
+);
+```
+
+`Manually`
+
+This manual setup is basically what `handleSession` is doing behind the scenes.
 
 ```js
 import { initializeSession } from "svelte-kit-cookie-session";
@@ -44,10 +80,9 @@ export async function getSession({ locals }) {
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ request, render }) {
-  
+
   const session = initializeSession(request.headers, {
     secret: "SOME_SECRET_AT_LEAST_32_CHARACTERS_LONG",
-    cookie: { path: "/" },
   });
 
   request.locals.session = session;
@@ -56,21 +91,33 @@ export async function handle({ request, render }) {
 
   /** `session` is a Proxy, after the svelte kit renderer does it job, it will contain a optional set-cookie header if you set the session in an endpoint */
 
-  if (!session["set-cookie"]) {
-    return response;
-  }
+	if (!session['set-cookie'] || !response?.headers) {
+		return response;
+	}
 
-  return {
-    ...response,
-    headers: {
-      ...response.headers,
-      ...session,
-    },
-  };
+	if (response.headers['set-cookie']) {
+		if (typeof response.headers['set-cookie'] === 'string') {
+			(response.headers['set-cookie'] as any) = [
+				response.headers['set-cookie'],
+				session['set-cookie']
+			];
+		} else if (Array.isArray(response.headers['set-cookie'])) {
+			(response.headers['set-cookie'] as any) = [
+				...response.headers['set-cookie'],
+				session['set-cookie']
+			];
+		}
+	} else {
+		response.headers['set-cookie'] = session['set-cookie'];
+	}
+  
+  return response;
 }
 ```
 
 ### Setting The Session
+
+`If the session already exists, the data get's updated but the expiration time stays the same`
 
 > src/routes/login.ts
 
@@ -102,96 +149,17 @@ export async function del({ locals }) {
 }
 ```
 
-### Refreshing the Session with new Data but keep the expiration date
+### Refresh the session with the same data but renew the expiration date.
 
 > src/routes/refresh.ts
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ locals, body }) {
-  locals.session.data = body;
   locals.session.refresh = true;
 
   return {
     body: locals.session.data,
-  };
-}
-```
-
-## Advanced Usage
-
-> src/lib/session.ts
-
-**Create a custom session store which handles persisting the session**
-
-```js
-import { session as sessionStore } from "$app/stores";
-
-/** @type {(method: 'POST' | 'PUT' | 'DELETE', value: any) => any} */
-function handleSession(method, value) {
-  fetch("/session", {
-    method,
-    body: method !== "DELETE" ? JSON.stringify(value) : undefined,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    cache: "no-cache",
-  }).then(() => {});
-}
-
-/** @type {{set: (value: any) => void, update: (value: any) => void, destroy: () => void, subscribe: import("svelte/store").Writable['subscribe']}} */
-export const session = {
-  set: (value) => {
-    sessionStore.set(value);
-    handleSession("POST", value);
-  },
-  update: (value) => {
-    sessionStore.set(value);
-    handleSession("PUT", value);
-  },
-  destroy: () => {
-    sessionStore.set({});
-    handleSession("DELETE");
-  },
-  subscribe: sessionStore.subscribe,
-};
-```
-
-> src/routes/session/index.js
-
-**This is the corresponding endpoint for the custom session store, which handles the different methods.**
-
-⚠️ You probably want to secure this somehow, im up for suggestions!
-
-```js
-/** @type {import('@sveltejs/kit').RequestHandler} */
-export async function post({ locals, body }) {
-  locals.session.data = body;
-
-  return {
-    body: locals.session.data,
-  };
-}
-
-/** @type {import('@sveltejs/kit').RequestHandler} */
-export async function put({ locals, body }) {
-  locals.session.data = body;
-  locals.session.refresh = true;
-
-  return {
-    body: locals.session.data,
-  };
-}
-
-/** @type {import('@sveltejs/kit').RequestHandler} */
-export async function del({ locals }) {
-  locals.session.destroy = true;
-
-  return {
-    body: {
-      ok: true,
-    },
   };
 }
 ```
