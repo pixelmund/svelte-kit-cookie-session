@@ -15,7 +15,7 @@ export interface SessionOptions {
 
 export interface Session<SessionType = Record<string, any>> {
   data: SessionType & {
-    expires: Date;
+    expires?: Date;
   };
   refresh: true;
   destroy: true;
