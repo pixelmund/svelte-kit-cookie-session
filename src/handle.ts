@@ -8,10 +8,17 @@ export function handleSession<
   options: SessionOptions,
   passedHandle: Handle<Locals & { session: Session<SessionType> }> = async ({
     request,
-    render,
-  }) => render(request)
+    resolve,
+  }) => resolve(request)
 ) {
-  return async function handle({ request, render }) {
+  //@ts-ignore TODO: Remove this once kit hits 1.0
+  return async function handle({ request, resolve, render }) {
+    if (typeof render !== "undefined") {
+      throw new Error(
+        "Please update to the latest @next version of @sveltejs/kit, `render` should now be called `resolve`"
+      );
+    }
+
     // We type it as any here to avoid typescript complaining about set-cookie;
     const session: any = initializeSession<SessionType>(
       request.headers,
@@ -19,7 +26,7 @@ export function handleSession<
     );
     request.locals.session = session;
 
-    const response = await passedHandle({ request, render });
+    const response = await passedHandle({ request, resolve });
 
     if (!session["set-cookie"] || !response?.headers) {
       return response;
