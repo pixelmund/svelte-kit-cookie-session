@@ -57,11 +57,11 @@ export const handle = handleSession(
   {
     secret: "SOME_SECRET_SECRET_32_CHARS_LONG",
   },
-  ({ request, render }) => {
+  ({ request, resolve }) => {
     // request.locals is populated with the session `request.locals.session`
 
     // Do anything you want here
-    return render(request);
+    return resolve(request);
   }
 );
 ```
@@ -79,7 +79,7 @@ export async function getSession({ locals }) {
 }
 
 /** @type {import('@sveltejs/kit').Handle} */
-export async function handle({ request, render }) {
+export async function handle({ request, resolve }) {
 
   const session = initializeSession(request.headers, {
     secret: "SOME_SECRET_AT_LEAST_32_CHARACTERS_LONG",
@@ -87,7 +87,7 @@ export async function handle({ request, render }) {
 
   request.locals.session = session;
 
-  const response = await render(request);
+  const response = await resolve(request);
 
   /** `session` is a Proxy, after the svelte kit renderer does it job, it will contain a optional set-cookie header if you set the session in an endpoint */
 
