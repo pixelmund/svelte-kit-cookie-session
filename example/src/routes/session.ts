@@ -1,6 +1,6 @@
 export const del: RequestHandler = ({ locals }) => {
   // Destroy the session and cookie
-  locals.session.destroy = true;
+  locals.session.destroy();
 
   return { body: { ok: true } };
 };
