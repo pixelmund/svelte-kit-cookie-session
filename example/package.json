@@ -18,6 +18,6 @@
   },
   "type": "module",
   "dependencies": {
-    "svelte-kit-cookie-session": "^1.1.1"
+    "svelte-kit-cookie-session": "^1.1.4"
   }
 }
