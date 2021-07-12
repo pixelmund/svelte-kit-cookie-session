@@ -110,7 +110,7 @@ export async function handle({ request, resolve }) {
 	} else {
 		response.headers['set-cookie'] = session['set-cookie'];
 	}
-  
+
   return response;
 }
 ```
@@ -162,12 +162,14 @@ export async function put({ locals, body }) {
     body: locals.session.data,
   };
 }
-
 ```
+
 ### Refresh the session expiration on every request `Rolling` -> default is false!
 
+> Note this currently only fires if a session is already existing
+
 ```js
-  handleSession({
-    rolling: true,
-  });
+handleSession({
+  rolling: true,
+});
 ```
