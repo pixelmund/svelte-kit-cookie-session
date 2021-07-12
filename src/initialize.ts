@@ -89,8 +89,18 @@ export function initializeSession<SessionType = Record<string, any>>(
 
   const session: { "set-cookie"?: string } = {};
 
-  const sessionProxy : Session<SessionType> = new Proxy(session, {
+  const sessionProxy: Session<SessionType> = new Proxy(session, {
     set: function (obj, prop, value) {
+      if (prop === "refresh" || prop === "destroy") {
+        console.warn(
+          "The api got refactored, you should now call the " +
+            prop +
+            " function session." +
+            prop +
+            "()"
+        );
+        return true;
+      }
       if (prop === "data") {
         if (sessionData && sessionData.expires) {
           const currentDate = new Date();
