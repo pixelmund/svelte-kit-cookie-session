@@ -53,7 +53,7 @@ test("session.data = data should set the set-cookie Header", () => {
   assert.type(session["set-cookie"], "string");
 });
 
-test("session.refresh = true should refresh the session expiration time", async () => {
+test("session.refresh() should refresh the session expiration time", async () => {
   const session = initializeSession({}, { secret: SECRET }) as any;
 
   session.data = initialData;
@@ -61,20 +61,20 @@ test("session.refresh = true should refresh the session expiration time", async 
 
   await sleep(100);
 
-  session.refresh = true;
+  session.refresh();
 
   if (sessionData.expires === session.data.expires) {
     throw new Error("Expiration date should be refreshed");
   }
 });
 
-test("session.destroy = true should delete the session cookie and data", () => {
+test("session.destroy() should delete the session cookie and data", () => {
   const session = initializeSession({}, { secret: SECRET }) as any;
   session.data = initialData;
 
   const cookieString = session["set-cookie"];
 
-  session.destroy = true;
+  session.destroy();
 
   if (session["set-cookie"] === cookieString) {
     throw new Error("Destroy cookie not set correctly");
@@ -118,7 +118,11 @@ test("if the session exists setting session.data should update the data but keep
     { secret: SECRET }
   );
 
-  sessionWithInitialCookie.data = {...initialData, ...sessionWithInitialCookie.data, username: 'mike'};
+  sessionWithInitialCookie.data = {
+    ...initialData,
+    ...sessionWithInitialCookie.data,
+    username: "mike",
+  };
 
   const sessionData = sessionWithInitialCookie.data;
 
@@ -129,21 +133,32 @@ test("if the session exists setting session.data should update the data but keep
       theme: sessionData.theme,
       lang: sessionData.lang,
     },
-    {...initialData, username: 'mike'},
+    { ...initialData, username: "mike" },
     "Data should be set correctly"
   );
 
-  if (new Date(oldSession.data.expires).getTime() !== new Date(sessionData.expires).getTime()) {
+  if (
+    new Date(oldSession.data.expires).getTime() !==
+    new Date(sessionData.expires).getTime()
+  ) {
     throw new Error("Expires should not change");
   }
 
-  const oldMaxAge = oldSession["set-cookie"].split(";")[1].trim().replace('Max-Age=', '');
-  const newMaxAge = sessionWithInitialCookie["set-cookie"].split(";")[1].trim().replace('Max-Age=', '');
+  const oldMaxAge = oldSession["set-cookie"]
+    .split(";")[1]
+    .trim()
+    .replace("Max-Age=", "");
+  const newMaxAge = sessionWithInitialCookie["set-cookie"]
+    .split(";")[1]
+    .trim()
+    .replace("Max-Age=", "");
 
-  if(newMaxAge < oldMaxAge){
+  if (newMaxAge < oldMaxAge) {
     // OK
-  }else {
-    throw new Error("Session cookie should have the correct max age after updating");
+  } else {
+    throw new Error(
+      "Session cookie should have the correct max age after updating"
+    );
   }
 });
 

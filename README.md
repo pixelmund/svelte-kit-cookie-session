@@ -139,7 +139,7 @@ export async function post({ locals, body }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function del({ locals }) {
-  locals.session.destroy = true;
+  locals.session.destroy();
 
   return {
     body: {
@@ -156,10 +156,18 @@ export async function del({ locals }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ locals, body }) {
-  locals.session.refresh = true;
+  locals.session.refresh(/** Optional new expiration time in days */);
 
   return {
     body: locals.session.data,
   };
 }
+
+```
+### Refresh the session expiration on every request `Rolling` -> default is false!
+
+```js
+  handleSession({
+    rolling: true,
+  });
 ```

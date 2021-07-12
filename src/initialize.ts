@@ -1,6 +1,6 @@
-import { daysToMaxage, parse, serialize } from "./utils/cookie";
-import { decrypt, encrypt } from "salteen";
+import { parse, serialize, daysToMaxage } from "./utils/cookie";
 import type { CookieSerializeOptions } from "./utils/cookie";
+import { decrypt, encrypt } from "salteen";
 
 let initialSecret: string;
 let encoder: (value: string) => string | undefined;
@@ -10,6 +10,7 @@ export interface SessionOptions {
   key?: string;
   secret: string;
   expires?: number;
+  rolling?: boolean;
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
 }
 
@@ -17,8 +18,8 @@ export interface Session<SessionType = Record<string, any>> {
   data: SessionType & {
     expires?: Date;
   };
-  refresh: true;
-  destroy: true;
+  refresh: (expires_in_days?: number) => boolean;
+  destroy: () => boolean;
 }
 
 export function initializeSession<SessionType = Record<string, any>>(
@@ -88,33 +89,16 @@ export function initializeSession<SessionType = Record<string, any>>(
 
   const session: { "set-cookie"?: string } = {};
 
-  const sessionProxy = new Proxy(session, {
+  const sessionProxy: Session<SessionType> = new Proxy(session, {
     set: function (obj, prop, value) {
-      if (prop === "refresh") {
-        if (!sessionData || isInvalidDate) {
-          return true;
-        }
-        sessionData = {
-          ...sessionData,
-          expires: new Date(Date.now() + expires * 1000),
-        };
-        sessionCookie = serialize(
-          sessionOptions.key,
-          encoder(JSON.stringify(sessionData)),
-          sessionOptions.cookie
+      if (prop === "refresh" || prop === "destroy") {
+        console.warn(
+          "The api got refactored, you should now call the " +
+            prop +
+            " function session." +
+            prop +
+            "()"
         );
-        obj["set-cookie"] = sessionCookie;
-        return true;
-      }
-      if (prop === "destroy") {
-        if (sessionCookie.length === 0) return true;
-        sessionData = undefined;
-        sessionCookie = serialize(sessionOptions.key, "0", {
-          ...sessionOptions.cookie,
-          maxAge: undefined,
-          expires: new Date(Date.now() - 360000000),
-        });
-        obj["set-cookie"] = sessionCookie;
         return true;
       }
       if (prop === "data") {
@@ -134,7 +118,7 @@ export function initializeSession<SessionType = Record<string, any>>(
         };
         sessionCookie = serialize(
           sessionOptions.key,
-          encoder(JSON.stringify(sessionData)),
+          encoder(JSON.stringify(sessionData)) || "",
           sessionOptions.cookie
         );
         obj["set-cookie"] = sessionCookie;
@@ -144,13 +128,57 @@ export function initializeSession<SessionType = Record<string, any>>(
     get: function (obj, prop) {
       if (prop === "data") {
         return sessionData && !isInvalidDate ? sessionData : {};
+      } else if (prop === "refresh") {
+        return (expires_in_days?: number) => {
+          if (!sessionData || isInvalidDate) {
+            return false;
+          }
+
+          let new_expires = daysToMaxage(options.expires ?? 7);
+
+          if (expires_in_days) {
+            new_expires = daysToMaxage(expires_in_days);
+          }
+
+          sessionData = {
+            ...sessionData,
+            expires: new Date(Date.now() + new_expires * 1000),
+          };
+
+          sessionCookie = serialize(
+            sessionOptions.key,
+            encoder(JSON.stringify(sessionData)) || "",
+            {
+              ...sessionOptions.cookie,
+              maxAge: new_expires,
+            }
+          );
+
+          obj["set-cookie"] = sessionCookie;
+          return true;
+        };
+      } else if (prop === "destroy") {
+        return () => {
+          if (sessionCookie.length === 0) return false;
+          sessionData = undefined;
+          sessionCookie = serialize(sessionOptions.key, "0", {
+            ...sessionOptions.cookie,
+            maxAge: undefined,
+            expires: new Date(Date.now() - 360000000),
+          });
+          obj["set-cookie"] = sessionCookie;
+          return true;
+        };
       }
       return (obj as any)[prop];
     },
   }) as any;
 
   if (isInvalidDate) {
-    sessionProxy.destroy = true;
+    sessionProxy.destroy();
+  }
+  if (options?.rolling && !isInvalidDate && sessionData) {
+    sessionProxy.refresh();
   }
 
   return sessionProxy;
