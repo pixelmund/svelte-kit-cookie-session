@@ -1,0 +1,31 @@
+name: CI Checks
+
+# run this workflow on specific events in github
+on:
+    # pull requests to master
+    pull_request:
+        paths:
+            - '**'
+
+    # every commit on master
+    push:
+        branches:
+            - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 15.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run test
