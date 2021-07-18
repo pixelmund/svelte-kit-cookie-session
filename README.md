@@ -26,9 +26,9 @@ yarn add svelte-kit-cookie-session
 
 You can find an example implementation here [Example](/example).
 
-The secret is a private key you must pass at runtime, it has to be at least 32 characters long. Use [Password Generator](https://1password.com/password-generator/) to generate strong passwords.
+The secret is a private key or list of private keys you must pass at runtime, it has to be at least 32 characters long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
 
-⚠️ You should always store passwords in secret environment variables on your platform.
+⚠️ You should always store secrets in secret environment variables on your platform.
 
 ### Initializing
 
@@ -66,54 +66,46 @@ export const handle = handleSession(
 );
 ```
 
-`Manually`
+### ♻️ Secret rotation is supported. It allows you to change the secret used to sign and encrypt sessions while still being able to decrypt sessions that were created with a previous secret.
 
-This manual setup is basically what `handleSession` is doing behind the scenes.
+This is useful if you want to:
+
+- rotate secrets for better security every two (or more, or less) weeks
+- change the secret you previously used because it leaked somewhere (😱)
+
+Then you can use multiple secrets:
+
+**Week 1**:
 
 ```js
-import { initializeSession } from "svelte-kit-cookie-session";
-
-/** @type {import('@sveltejs/kit').GetSession} */
-export async function getSession({ locals }) {
-  return locals.session.data;
-}
-
-/** @type {import('@sveltejs/kit').Handle} */
-export async function handle({ request, resolve }) {
-
-  const session = initializeSession(request.headers, {
-    secret: "SOME_SECRET_AT_LEAST_32_CHARACTERS_LONG",
-  });
-
-  request.locals.session = session;
-
-  const response = await resolve(request);
-
-  /** `session` is a Proxy, after the svelte kit renderer does it job, it will contain a optional set-cookie header if you set the session in an endpoint */
-
-	if (!session['set-cookie'] || !response?.headers) {
-		return response;
-	}
-
-	if (response.headers['set-cookie']) {
-		if (typeof response.headers['set-cookie'] === 'string') {
-			(response.headers['set-cookie'] as any) = [
-				response.headers['set-cookie'],
-				session['set-cookie']
-			];
-		} else if (Array.isArray(response.headers['set-cookie'])) {
-			(response.headers['set-cookie'] as any) = [
-				...response.headers['set-cookie'],
-				session['set-cookie']
-			];
-		}
-	} else {
-		response.headers['set-cookie'] = session['set-cookie'];
-	}
-
-  return response;
-}
+export const handle = handleSession({
+  secret:
+    "complex_secret_at_least_32_characters_long" /** U can start with string only secret and later change to an array of {id: number, secret: string} */,
+});
 ```
+
+**Week 2**:
+
+```js
+export const handle = handleSession({
+  secret: [
+    {
+      id: 2,
+      secret: "another_secret_at_least_32_characters_long",
+    },
+    {
+      id: 1,
+      secret: "complex_secret_at_least_32_characters_long",
+    },
+  ],
+});
+```
+
+Notes:
+
+- `id` is required so that we do not have to try every secret in the list when decrypting (the `id` is part of the cookies value).
+- The secret used to encrypt session data is always the first one in the array, so when rotating to put a new secret, it must be first in the array list
+- Even if you do not provide an array at first, you can always move to array based secret afterwards, knowing that your first password (`string`) was given `{id:1}` automatically.
 
 ### Setting The Session
 

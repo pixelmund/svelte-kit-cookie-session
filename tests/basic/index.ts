@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { handleSession, initializeSession } from "../../src";
+import { initializeSession } from "../../src";
 
 const emptyHeaders = {};
 const SECRET = "A_VERY_SECRET_SECRET_32_CHARS_LONG";
@@ -13,6 +13,8 @@ const initialData = {
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const getCookieValue = (cookie: string) => cookie.split(";")[0].trim();
 
 test("initializeSession should initialize the session as an object", () => {
   const session = initializeSession(emptyHeaders, {
@@ -85,7 +87,7 @@ test("Session should be initialized with the same data from a given session cook
   const newSession = initializeSession({}, { secret: SECRET }) as any;
 
   newSession.data = initialData;
-  const cookie = newSession["set-cookie"].split(";")[0].trim();
+  const cookie = getCookieValue(newSession["set-cookie"]);
 
   const sessionWithInitialCookie = initializeSession(
     { Cookie: cookie },
@@ -109,7 +111,7 @@ test("if the session exists setting session.data should update the data but keep
   const oldSession = initializeSession({}, { secret: SECRET }) as any;
 
   oldSession.data = initialData;
-  const cookie = oldSession["set-cookie"].split(";")[0].trim();
+  const cookie = getCookieValue(oldSession["set-cookie"]);
 
   await sleep(1500);
 
@@ -166,7 +168,7 @@ test("Session should only decrypt data with the same secret and throw an error o
   const newSession = initializeSession({}, { secret: SECRET }) as any;
 
   newSession.data = initialData;
-  const cookie = newSession["set-cookie"].split(";")[0].trim();
+  const cookie = getCookieValue(newSession["set-cookie"]);
 
   assert.throws(() => {
     const sessionWithWrongSecret = initializeSession(
@@ -174,6 +176,62 @@ test("Session should only decrypt data with the same secret and throw an error o
       { secret: "OTHER_SECRET_THAT_DOESNT_MATCH" }
     );
   });
+});
+
+test("Session should handle password rotation", () => {
+  const newSession = initializeSession(
+    {},
+    { secret: SECRET + "_PREVIOUS_SECRET" }
+  );
+
+  newSession.data = initialData;
+
+  const initialCookie = getCookieValue(newSession["set-cookie"]);
+
+  const sessionWithNewSecret = initializeSession(
+    { Cookie: initialCookie },
+    {
+      secret: [
+        { id: 2, secret: SECRET + "_NEW_SECRET" },
+        { id: 1, secret: SECRET + "_PREVIOUS_SECRET" },
+      ],
+    }
+  );
+
+  assert.equal(
+    newSession.data,
+    sessionWithNewSecret.data,
+    "Password rotated secrets should result in the same session data"
+  );
+  assert.not.equal(
+    getCookieValue(newSession["set-cookie"]),
+    getCookieValue(sessionWithNewSecret["set-cookie"]),
+    "Password rotated session should re encrypt the data/cookie"
+  );
+
+  const nextCookie = getCookieValue(sessionWithNewSecret["set-cookie"]);
+
+  const sessionWithNewestSecret = initializeSession(
+    { Cookie: nextCookie },
+    {
+      secret: [
+        { id: 3, secret: SECRET + "_NEWEST_SECRET" },
+        { id: 2, secret: SECRET + "_NEW_SECRET" },
+        { id: 1, secret: SECRET + "_PREVIOUS_SECRET" },
+      ],
+    }
+  );
+
+  assert.equal(
+    sessionWithNewSecret.data,
+    sessionWithNewestSecret.data,
+    "Password rotated secrets should result in the same session data"
+  );
+  assert.not.equal(
+    getCookieValue(sessionWithNewSecret["set-cookie"]),
+    getCookieValue(sessionWithNewestSecret["set-cookie"]),
+    "Password rotated session should re encrypt the data/cookie"
+  );
 });
 
 test.run();

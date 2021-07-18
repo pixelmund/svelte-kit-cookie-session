@@ -11,14 +11,7 @@ export function handleSession<
     resolve,
   }) => resolve(request)
 ) {
-  //@ts-ignore TODO: Remove this once kit hits 1.0
-  return async function handle({ request, resolve, render }) {
-    if (typeof render !== "undefined") {
-      throw new Error(
-        "Please update to the latest @next version of @sveltejs/kit, `render` should now be called `resolve`"
-      );
-    }
-
+  return async function handle({ request, resolve }) {
     // We type it as any here to avoid typescript complaining about set-cookie;
     const session: any = initializeSession<SessionType>(
       request.headers,
@@ -45,7 +38,7 @@ export function handleSession<
         ];
       }
     } else {
-      response.headers["set-cookie"] = session["set-cookie"];
+      (response.headers["set-cookie"] as any) = [session["set-cookie"]];
     }
 
     return response;

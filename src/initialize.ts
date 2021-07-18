@@ -8,7 +8,7 @@ let decoder: (value: string) => string | undefined;
 
 export interface SessionOptions {
   key?: string;
-  secret: string;
+  secret: string | { id: number; secret: string }[];
   expires?: number;
   rolling?: boolean;
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
@@ -29,17 +29,23 @@ export function initializeSession<SessionType = Record<string, any>>(
   const key = options.key || "kit.session";
   const expires = daysToMaxage(options.expires ?? 7);
 
-  //** This is mainly for testing purposes */
+  const secrets =
+    typeof options.secret === "string"
+      ? [{ id: 1, secret: options.secret }]
+      : options.secret;
+
+  /** This is mainly for testing purposes */
   let changedSecrets: boolean = false;
-  if (!initialSecret || initialSecret !== options.secret) {
-    initialSecret = options.secret;
+  if (!initialSecret || initialSecret !== secrets[0].secret) {
+    initialSecret = secrets[0].secret;
     changedSecrets = true;
   }
+  // Setup de/encoding
   if (!encoder || changedSecrets) {
-    encoder = encrypt(options.secret);
+    encoder = encrypt(secrets[0].secret);
   }
   if (!decoder || changedSecrets) {
-    decoder = decrypt(options.secret);
+    decoder = decrypt(secrets[0].secret);
   }
 
   const sessionOptions = {
@@ -51,6 +57,7 @@ export function initializeSession<SessionType = Record<string, any>>(
   //@ts-ignore That's okay
   sessionOptions.cookie.maxAge = expires;
 
+  // Set sane default cookie optioons
   if (!sessionOptions.cookie.httpOnly) {
     sessionOptions.cookie.httpOnly = true;
   }
@@ -61,24 +68,56 @@ export function initializeSession<SessionType = Record<string, any>>(
     sessionOptions.cookie.path = "/";
   }
 
+  // Parse the cookie header
   const cookies = parse(headers.cookie || headers.Cookie || "", {});
 
+  // Grab the session cookie from the parsed cookies
   let sessionCookie: string = cookies[sessionOptions.key] || "";
   let isInvalidDate: boolean = false;
+  let shouldReEncrypt: boolean = false;
 
   let sessionData: (SessionType & { expires?: Date }) | undefined;
 
+  // If we have a session cookie we try to get the id from the cookie value and use it to decode the cookie.
+  // If the decodeID is not the first secret in the secrets array we should re encrypt to the newest secret.
   if (sessionCookie.length > 0) {
+    // Split the sessionCookie on the &id= field to get the id we used to encrypt the session.
+    const [_sessionCookie, id] = sessionCookie.split("&id=");
+    // Set the session cookie without &id=
+    sessionCookie = _sessionCookie;
+    // If there is no id found we use the initial secret
+    const decodeID = id ? Number(id) : 1;
+
+    // find the secret with the decodeID
+    const secret = secrets.find((sec) => sec.id === decodeID)?.secret;
+
+    if (!secret) {
+      throw new Error("Unknown secret id");
+    }
+
+    // If the decodeID unequals the newest secret id in the array, re initialize the decoder.
+    if (secrets[0].id !== decodeID) {
+      decoder = decrypt(secret);
+    }
+
+    // Try to decode with the given sessionCookie and secret
     const decrypted = decoder(sessionCookie);
     if (decrypted && decrypted.length > 0) {
       try {
         sessionData = JSON.parse(decrypted);
+        // If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
+        if (secrets[0].id !== decodeID) {
+          shouldReEncrypt = true;
+        }
       } catch (error) {
-        throw new Error("Malformed Data or Wrong Key used");
+        throw new Error("Malformed Data or Wrong Key(s) used");
       }
+    } else {
+      throw new Error("Malformed Data or Wrong Key(s) used");
     }
   }
 
+  // Check if the session is already expired
   if (
     sessionData &&
     sessionData.expires &&
@@ -89,18 +128,9 @@ export function initializeSession<SessionType = Record<string, any>>(
 
   const session: { "set-cookie"?: string } = {};
 
+  // Initialize the session proxy
   const sessionProxy: Session<SessionType> = new Proxy(session, {
     set: function (obj, prop, value) {
-      if (prop === "refresh" || prop === "destroy") {
-        console.warn(
-          "The api got refactored, you should now call the " +
-            prop +
-            " function session." +
-            prop +
-            "()"
-        );
-        return true;
-      }
       if (prop === "data") {
         if (sessionData && sessionData.expires) {
           const currentDate = new Date();
@@ -118,7 +148,7 @@ export function initializeSession<SessionType = Record<string, any>>(
         };
         sessionCookie = serialize(
           sessionOptions.key,
-          encoder(JSON.stringify(sessionData)) || "",
+          (encoder(JSON.stringify(sessionData)) || "") + "&id=" + secrets[0].id,
           sessionOptions.cookie
         );
         obj["set-cookie"] = sessionCookie;
@@ -147,7 +177,9 @@ export function initializeSession<SessionType = Record<string, any>>(
 
           sessionCookie = serialize(
             sessionOptions.key,
-            encoder(JSON.stringify(sessionData)) || "",
+            (encoder(JSON.stringify(sessionData)) || "") +
+              "&id=" +
+              secrets[0].id,
             {
               ...sessionOptions.cookie,
               maxAge: new_expires,
@@ -174,11 +206,17 @@ export function initializeSession<SessionType = Record<string, any>>(
     },
   }) as any;
 
+  // If we have an invalid date we destroy the session.
   if (isInvalidDate) {
     sessionProxy.destroy();
   }
+  // If rolling is activated and the session exists we refresh the session on every request.
   if (options?.rolling && !isInvalidDate && sessionData) {
     sessionProxy.refresh();
+  }
+  // Check if we have to re encrypt the data
+  if (shouldReEncrypt && sessionData) {
+    sessionProxy.data = { ...sessionData };
   }
 
   return sessionProxy;
