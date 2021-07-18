@@ -32,11 +32,7 @@ The secret is a private key or list of private keys you must pass at runtime, it
 
 ### Initializing
 
-#### There are two ways to initialize the session, one is doing it manually the other one is a higher-order-function
-
 > src/hooks.ts || src/hooks/index.ts
-
-`Suggested way`
 
 ```js
 import { handleSession } from "svelte-kit-cookie-session";
@@ -80,7 +76,7 @@ Then you can use multiple secrets:
 ```js
 export const handle = handleSession({
   secret:
-    "complex_secret_at_least_32_characters_long" /** U can start with string only secret and later change to an array of {id: number, secret: string} */,
+    "complex_secret_at_least_32_characters_long",
 });
 ```
 
