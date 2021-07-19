@@ -234,4 +234,23 @@ test("Session should handle password rotation", () => {
   );
 });
 
+test("Session should be deleted if used secret id is not found", () => {
+  const newSession = initializeSession({}, { secret: SECRET });
+
+  newSession.data = initialData;
+
+  const initialCookie = getCookieValue(newSession["set-cookie"]);
+
+  const sessionWithNewSecret = initializeSession(
+    { Cookie: initialCookie },
+    {
+      secret: [{ id: 2, secret: "LaOF8ZZVl453orCQpItURpuksdLlASAF" }],
+    }
+  );
+
+  const deletedCookie = getCookieValue(sessionWithNewSecret["set-cookie"]);
+
+  assert.equal(deletedCookie, "kit.session=0", "Cookie should be deleted");
+});
+
 test.run();
