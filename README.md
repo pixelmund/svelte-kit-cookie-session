@@ -26,7 +26,7 @@ yarn add svelte-kit-cookie-session
 
 You can find an example implementation here [Example](/example).
 
-The secret is a private key or list of private keys you must pass at runtime, it has to be at least 32 characters long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
+The secret is a private key or list of private keys you must pass at runtime, it has to be `32 characters` long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
 
 ⚠️ You should always store secrets in secret environment variables on your platform.
 
@@ -76,7 +76,7 @@ Then you can use multiple secrets:
 ```js
 export const handle = handleSession({
   secret:
-    "complex_secret_at_least_32_characters_long",
+    "SOME_SECRET_SECRET_32_CHARS_LONG",
 });
 ```
 
@@ -87,11 +87,11 @@ export const handle = handleSession({
   secret: [
     {
       id: 2,
-      secret: "another_secret_at_least_32_characters_long",
+      secret: "2Fvqq8rvH7n5B8tDFfnPk9uETJrvJ0Eu",
     },
     {
       id: 1,
-      secret: "complex_secret_at_least_32_characters_long",
+      secret: "SOME_SECRET_SECRET_32_CHARS_LONG",
     },
   ],
 });

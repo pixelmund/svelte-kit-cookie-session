@@ -3,7 +3,7 @@ import * as assert from "uvu/assert";
 import { initializeSession } from "../../src";
 
 const emptyHeaders = {};
-const SECRET = "A_VERY_SECRET_SECRET_32_CHARS_LONG";
+const SECRET = "HAvKWScWHsJQBr6uR9bdrSYiso1AOxKB";
 
 const initialData = {
   username: "patrick",
@@ -181,7 +181,7 @@ test("Session should only decrypt data with the same secret and throw an error o
 test("Session should handle password rotation", () => {
   const newSession = initializeSession(
     {},
-    { secret: SECRET + "_PREVIOUS_SECRET" }
+    { secret: SECRET }
   );
 
   newSession.data = initialData;
@@ -192,8 +192,8 @@ test("Session should handle password rotation", () => {
     { Cookie: initialCookie },
     {
       secret: [
-        { id: 2, secret: SECRET + "_NEW_SECRET" },
-        { id: 1, secret: SECRET + "_PREVIOUS_SECRET" },
+        { id: 2, secret: "JmLy4vMnwmQ75zhSJPc7Ud6U0anKnDZZ" },
+        { id: 1, secret: SECRET },
       ],
     }
   );
@@ -215,9 +215,9 @@ test("Session should handle password rotation", () => {
     { Cookie: nextCookie },
     {
       secret: [
-        { id: 3, secret: SECRET + "_NEWEST_SECRET" },
-        { id: 2, secret: SECRET + "_NEW_SECRET" },
-        { id: 1, secret: SECRET + "_PREVIOUS_SECRET" },
+        { id: 3, secret: "8AcoepoH61eK5ooJwHWnRNLK5ZAJDCku" },
+        { id: 2, secret: "JmLy4vMnwmQ75zhSJPc7Ud6U0anKnDZZ" },
+        { id: 1, secret: SECRET },
       ],
     }
   );

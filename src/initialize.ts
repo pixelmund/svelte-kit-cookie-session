@@ -1,6 +1,6 @@
 import { parse, serialize, daysToMaxage } from "./utils/cookie";
 import type { CookieSerializeOptions } from "./utils/cookie";
-import { decrypt, encrypt } from "salteen";
+import { decrypt, encrypt } from "./utils/crypto";
 
 let initialSecret: string;
 let encoder: (value: string) => string | undefined;
