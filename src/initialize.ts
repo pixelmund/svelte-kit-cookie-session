@@ -31,7 +31,9 @@ export function initializeSession<SessionType = Record<string, any>>(
 
   // Null or Undefined
   if (options.secret == null) {
-    throw new Error("Please provide at least one secret with exact 32 characters.");
+    throw new Error(
+      "Please provide at least one secret with exact 32 characters."
+    );
   }
 
   const secrets =
@@ -111,18 +113,18 @@ export function initializeSession<SessionType = Record<string, any>>(
     }
 
     // Try to decode with the given sessionCookie and secret
-    const decrypted = decoder(sessionCookie);
-    if (decrypted && decrypted.length > 0) {
-      try {
+    try {
+      const decrypted = decoder(sessionCookie);
+      if (decrypted && decrypted.length > 0) {
         sessionData = JSON.parse(decrypted);
         // If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
         if (secrets[0].id !== decodeID) {
           shouldReEncrypt = true;
         }
-      } catch (error) {
+      } else {
         shouldDestroy = true;
       }
-    } else {
+    } catch (error) {
       shouldDestroy = true;
     }
   }

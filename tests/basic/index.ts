@@ -172,7 +172,7 @@ test("Session should only decrypt data with the same secret and throw an error o
 
   const sessionWithWrongSecret = initializeSession(
     { Cookie: cookie },
-    { secret: "OTHER_SECRET_THAT_DOESNT_MATCH" }
+    { secret: "zL9X16gHNCt1uRuopnJuanfznf0ziczP" }
   );
 
   const wrongCookie = getCookieValue(sessionWithWrongSecret['set-cookie']);
