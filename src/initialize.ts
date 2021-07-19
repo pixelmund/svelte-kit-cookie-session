@@ -85,43 +85,36 @@ export function initializeSession<SessionType = Record<string, any>>(
     // Split the sessionCookie on the &id= field to get the id we used to encrypt the session.
     const [_sessionCookie, id] = sessionCookie.split("&id=");
 
-    if (!id || !secrets.find((sec) => sec.id === Number(id))) {
-      shouldDestroy = true;
+    const decodeID = id ? Number(id) : 1;
+
+    // Use the id from the cookie or the initial one which is always 1.
+    let secret = secrets.find((sec) => sec.id === decodeID);
+
+    // If there is no secret found try the first in the secrets array.
+    if (!secret) secret = secrets[0];
+
+    // Set the session cookie without &id=
+    sessionCookie = _sessionCookie;
+
+    // If the decodeID unequals the newest secret id in the array, re initialize the decoder.
+    if (secrets[0].id !== decodeID) {
+      decoder = decrypt(secret.secret);
     }
 
-    if (!shouldDestroy) {
-      // Set the session cookie without &id=
-      sessionCookie = _sessionCookie;
-      // If there is no id found we use the initial secret
-      const decodeID =  Number(id);
-
-      // find the secret with the decodeID
-      const secret = secrets.find((sec) => sec.id === decodeID)!.secret;
-
-      if (!secret) {
-        throw new Error("Unknown secret id");
-      }
-
-      // If the decodeID unequals the newest secret id in the array, re initialize the decoder.
-      if (secrets[0].id !== decodeID) {
-        decoder = decrypt(secret);
-      }
-
-      // Try to decode with the given sessionCookie and secret
-      const decrypted = decoder(sessionCookie);
-      if (decrypted && decrypted.length > 0) {
-        try {
-          sessionData = JSON.parse(decrypted);
-          // If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
-          if (secrets[0].id !== decodeID) {
-            shouldReEncrypt = true;
-          }
-        } catch (error) {
-          throw new Error("Malformed Data or Wrong Key(s) used");
+    // Try to decode with the given sessionCookie and secret
+    const decrypted = decoder(sessionCookie);
+    if (decrypted && decrypted.length > 0) {
+      try {
+        sessionData = JSON.parse(decrypted);
+        // If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
+        if (secrets[0].id !== decodeID) {
+          shouldReEncrypt = true;
         }
-      } else {
-        throw new Error("Malformed Data or Wrong Key(s) used");
+      } catch (error) {
+        shouldDestroy = true;
       }
+    } else {
+      shouldDestroy = true;
     }
   }
 
@@ -215,7 +208,7 @@ export function initializeSession<SessionType = Record<string, any>>(
   }) as any;
 
   // If we have an invalid date or shouldDestroy is set to true we destroy the session.
-  if (isInvalidDate || shouldDestroy) {
+  if (isInvalidDate || shouldDestroy) {
     sessionProxy.destroy();
   }
   // If rolling is activated and the session exists we refresh the session on every request.
