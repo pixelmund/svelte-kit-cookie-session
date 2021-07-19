@@ -170,12 +170,13 @@ test("Session should only decrypt data with the same secret and throw an error o
   newSession.data = initialData;
   const cookie = getCookieValue(newSession["set-cookie"]);
 
-  assert.throws(() => {
-    const sessionWithWrongSecret = initializeSession(
-      { Cookie: cookie },
-      { secret: "OTHER_SECRET_THAT_DOESNT_MATCH" }
-    );
-  });
+  const sessionWithWrongSecret = initializeSession(
+    { Cookie: cookie },
+    { secret: "OTHER_SECRET_THAT_DOESNT_MATCH" }
+  );
+
+  const wrongCookie = getCookieValue(sessionWithWrongSecret['set-cookie']);
+  assert.equal(wrongCookie, 'kit.session=0');
 });
 
 test("Session should handle password rotation", () => {
