@@ -5,14 +5,10 @@ specifiers:
   '@types/cookie': ^0.4.1
   '@types/node': ^14.14.35
   rimraf: ^3.0.2
-  salteen: ^1.0.0
   svelte: ^3.35.0
   ts-node: ^9.1.1
   typescript: ^4.2.3
   uvu: ^0.5.1
-
-dependencies:
-  salteen: 1.0.0
 
 devDependencies:
   '@sveltejs/kit': 1.0.0-next.131_svelte@3.38.3
@@ -297,11 +293,6 @@ packages:
     dependencies:
       mri: 1.1.6
     dev: true
-
-  /salteen/1.0.0:
-    resolution: {integrity: sha512-hApiOPudRSzM5aD1dWIWlXL8dPUja8GloMzHMlmDtNiU5brFNyjvQ+SiLLxHVQNeZ2HgKBnzrRHp+BXQiA5vGg==}
-    engines: {node: '>=6'}
-    dev: false
 
   /source-map-js/0.6.2:
     resolution: {integrity: sha512-/3GptzWzu0+0MBQFrDKzw/DvvMTUORvgY6k6jd/VS6iCR4RDTKWH6v6WPwQoUO8667uQEf9Oe38DxAYWY5F/Ug==}

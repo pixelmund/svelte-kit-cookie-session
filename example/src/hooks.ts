@@ -1,5 +1,5 @@
 import type { GetSession } from "@sveltejs/kit";
-import { handleSession } from "svelte-kit-cookie-session";
+import { handleSession } from "$cookieSession/index";
 
 export const getSession: GetSession<Locals> = function ({ locals }) {
   return locals.session.data;

@@ -1,6 +1,6 @@
 import { parse, serialize, daysToMaxage } from "./utils/cookie";
 import type { CookieSerializeOptions } from "./utils/cookie";
-import { decrypt, encrypt } from "salteen";
+import { decrypt, encrypt } from "./utils/crypto";
 
 let initialSecret: string;
 let encoder: (value: string) => string | undefined;
@@ -28,6 +28,13 @@ export function initializeSession<SessionType = Record<string, any>>(
 ): Session<SessionType> {
   const key = options.key || "kit.session";
   const expires = daysToMaxage(options.expires ?? 7);
+
+  // Null or Undefined
+  if (options.secret == null) {
+    throw new Error(
+      "Please provide at least one secret"
+    );
+  }
 
   const secrets =
     typeof options.secret === "string"
@@ -102,18 +109,18 @@ export function initializeSession<SessionType = Record<string, any>>(
     }
 
     // Try to decode with the given sessionCookie and secret
-    const decrypted = decoder(sessionCookie);
-    if (decrypted && decrypted.length > 0) {
-      try {
+    try {
+      const decrypted = decoder(sessionCookie);
+      if (decrypted && decrypted.length > 0) {
         sessionData = JSON.parse(decrypted);
         // If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
         if (secrets[0].id !== decodeID) {
           shouldReEncrypt = true;
         }
-      } catch (error) {
+      } else {
         shouldDestroy = true;
       }
-    } else {
+    } catch (error) {
       shouldDestroy = true;
     }
   }

@@ -25,7 +25,6 @@
   "author": "pixelmund",
   "license": "MIT",
   "dependencies": {
-    "salteen": "^1.0.0"
   },
   "devDependencies": {
     "@sveltejs/kit": "^1.0.0-next.111",

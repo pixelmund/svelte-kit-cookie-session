@@ -26,7 +26,7 @@ yarn add svelte-kit-cookie-session
 
 You can find an example implementation here [Example](/example).
 
-The secret is a private key or list of private keys you must pass at runtime, it has to be at least 32 characters long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
+The secret is a private key or list of private keys you must pass at runtime, it should be at least `32 characters` long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
 
 ⚠️ You should always store secrets in secret environment variables on your platform.
 
@@ -44,14 +44,14 @@ export async function getSession({ locals }) {
 
 // You can do it like this, without passing a own handle function
 export const handle = handleSession({
-  secret: "SOME_SECRET_SECRET_32_CHARS_LONG",
+  secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
 });
 
 // Or pass your handle function as second argument to handleSession
 
 export const handle = handleSession(
   {
-    secret: "SOME_SECRET_SECRET_32_CHARS_LONG",
+    secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
   },
   ({ request, resolve }) => {
     // request.locals is populated with the session `request.locals.session`
@@ -76,7 +76,7 @@ Then you can use multiple secrets:
 ```js
 export const handle = handleSession({
   secret:
-    "complex_secret_at_least_32_characters_long",
+    "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
 });
 ```
 
@@ -87,11 +87,11 @@ export const handle = handleSession({
   secret: [
     {
       id: 2,
-      secret: "another_secret_at_least_32_characters_long",
+      secret: "SOME_OTHER_COMPLEX_SECRET_AT_LEAST_32_CHARS",
     },
     {
       id: 1,
-      secret: "complex_secret_at_least_32_characters_long",
+      secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
     },
   ],
 });
