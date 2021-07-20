@@ -3,7 +3,7 @@ import * as assert from "uvu/assert";
 import { initializeSession } from "../../src";
 
 const emptyHeaders = {};
-const SECRET = "HAvKWScWHsJQBr6uR9bdrSYiso1AOxKB";
+const SECRET = "SOME_SECRET_VALUE";
 
 const initialData = {
   username: "patrick",

@@ -32,7 +32,7 @@ export function initializeSession<SessionType = Record<string, any>>(
   // Null or Undefined
   if (options.secret == null) {
     throw new Error(
-      "Please provide at least one secret with exact 32 characters."
+      "Please provide at least one secret"
     );
   }
 
@@ -99,10 +99,6 @@ export function initializeSession<SessionType = Record<string, any>>(
 
     // If there is no secret found try the first in the secrets array.
     if (!secret) secret = secrets[0];
-
-    if (secret.secret.length !== 32) {
-      throw new Error("Secrets must be exact 32 characters long.");
-    }
 
     // Set the session cookie without &id=
     sessionCookie = _sessionCookie;

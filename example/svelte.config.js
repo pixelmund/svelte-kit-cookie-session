@@ -13,6 +13,7 @@ const config = {
     vite: {
       resolve: {
         alias: {
+          $cookieSession: path.resolve('../src')
         },
       },
     },
