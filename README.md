@@ -16,10 +16,29 @@ The seal stored on the client contains the session data, not your server, making
 
 ## Installation
 
+Install into `dependencies`
+
 ```bash
 npm i svelte-kit-cookie-session
 
 yarn add svelte-kit-cookie-session
+```
+
+
+
+> :warning: **Because of some vite issues [#14](https://github.com/pixelmund/svelte-kit-cookie-session/issues/14) [#15](https://github.com/pixelmund/svelte-kit-cookie-session/issues/15)**: you should add the following to your `svelte.config`!
+
+
+```js
+const config = {
+    kit: {
+      vite: {
+        optimizeDeps: {
+          exclude: ['svelte-kit-cookie-session'],
+        },
+      },
+    },
+};
 ```
 
 ## Usage
