@@ -1,14 +1,15 @@
 import { parse, serialize, daysToMaxage } from "./utils/cookie";
-import type { CookieSerializeOptions } from "./utils/cookie";
 import { decrypt, encrypt } from "./utils/crypto";
+import type { CookieSerializeOptions } from "./utils/cookie";
+import type { BinaryLike } from "./utils/crypto/types";
 
-let initialSecret: string;
+let initialSecret: BinaryLike;
 let encoder: (value: string) => string | undefined;
 let decoder: (value: string) => string | undefined;
 
 export interface SessionOptions {
   key?: string;
-  secret: string | { id: number; secret: string }[];
+  secret: BinaryLike | { id: number; secret: BinaryLike }[];
   expires?: number;
   rolling?: boolean;
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
@@ -31,15 +32,12 @@ export function initializeSession<SessionType = Record<string, any>>(
 
   // Null or Undefined
   if (options.secret == null) {
-    throw new Error(
-      "Please provide at least one secret"
-    );
+    throw new Error("Please provide at least one secret");
   }
 
-  const secrets =
-    typeof options.secret === "string"
-      ? [{ id: 1, secret: options.secret }]
-      : options.secret;
+  const secrets = Array.isArray(options.secret)
+    ? options.secret
+    : [{ id: 1, secret: options.secret }];
 
   /** This is mainly for testing purposes */
   let changedSecrets: boolean = false;

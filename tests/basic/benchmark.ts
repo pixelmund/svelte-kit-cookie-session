@@ -42,3 +42,4 @@ test("initialize and set session benchmark", () => {
   }
   console.timeEnd("decode-session");
 });
+

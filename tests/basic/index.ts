@@ -175,15 +175,12 @@ test("Session should only decrypt data with the same secret and throw an error o
     { secret: "zL9X16gHNCt1uRuopnJuanfznf0ziczP" }
   );
 
-  const wrongCookie = getCookieValue(sessionWithWrongSecret['set-cookie']);
-  assert.equal(wrongCookie, 'kit.session=0');
+  const wrongCookie = getCookieValue(sessionWithWrongSecret["set-cookie"]);
+  assert.equal(wrongCookie, "kit.session=0");
 });
 
 test("Session should handle password rotation", () => {
-  const newSession = initializeSession(
-    {},
-    { secret: SECRET }
-  );
+  const newSession = initializeSession({}, { secret: SECRET });
 
   newSession.data = initialData;
 
@@ -252,6 +249,32 @@ test("Session should be deleted if used secret id is not found", () => {
   const deletedCookie = getCookieValue(sessionWithNewSecret["set-cookie"]);
 
   assert.equal(deletedCookie, "kit.session=0", "Cookie should be deleted");
+});
+
+const BINARY_SECRET = new Uint8Array(32);
+
+test("Session should be initialized with a BinaryLike secret", () => {
+  const newSession = initializeSession({}, { secret: BINARY_SECRET });
+
+  newSession.data = initialData;
+  const cookie = getCookieValue(newSession["set-cookie"]);
+
+  const sessionWithInitialCookie = initializeSession(
+    { Cookie: cookie },
+    { secret: BINARY_SECRET }
+  );
+
+  const sessionData = sessionWithInitialCookie.data;
+  assert.equal(
+    {
+      username: sessionData.username,
+      email: sessionData.email,
+      theme: sessionData.theme,
+      lang: sessionData.lang,
+    },
+    initialData,
+    "Data should be set correctly"
+  );
 });
 
 test.run();

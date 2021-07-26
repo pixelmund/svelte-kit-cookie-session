@@ -1,4 +1,4 @@
-import { CipherGCMTypes } from "crypto";
+import type { CipherGCMTypes, BinaryLike as CBinaryLike } from "crypto";
 
 type DriveKeyOptions = {
   keyLength: number;
@@ -23,4 +23,5 @@ export type EncrypterOptions = Partial<Omit<DriveKeyOptions, "KeyLength">> & {
   authTagLength?: number;
 };
 
-export type EncryptionFunction<T> = (text: string, password: string) => T;
+export type BinaryLike = CBinaryLike;
+export type EncryptionFunction<T> = (text: string, password: BinaryLike) => T;
