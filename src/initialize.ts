@@ -1,5 +1,5 @@
-import { parse, serialize, daysToMaxage } from "./utils/cookie";
-import { decrypt, encrypt } from "./utils/crypto";
+import { parse, serialize, daysToMaxage } from "./utils/cookie.js";
+import { decrypt, encrypt } from "./utils/crypto/index.js";
 import type { CookieSerializeOptions } from "./utils/cookie";
 import type { BinaryLike } from "./utils/crypto/types";
 

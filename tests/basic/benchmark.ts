@@ -1,5 +1,5 @@
 import { test } from "uvu";
-import { initializeSession } from "../../src";
+import { initializeSession } from "../../src/index.js";
 
 const emptyHeaders = {};
 const SECRET = "HAvKWScWHsJQBr6uR9bdrSYiso1AOxKB";

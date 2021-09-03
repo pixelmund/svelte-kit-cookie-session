@@ -1,4 +1,4 @@
-import { initializeSession, Session, SessionOptions } from "./initialize";
+import { initializeSession, Session, SessionOptions } from "./initialize.js";
 import type { Handle } from "@sveltejs/kit";
 
 export function handleSession<

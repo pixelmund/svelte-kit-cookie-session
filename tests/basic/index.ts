@@ -1,6 +1,6 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
-import { initializeSession } from "../../src";
+import { initializeSession } from "../../src/index.js";
 
 const emptyHeaders = {};
 const SECRET = "SOME_SECRET_VALUE";
