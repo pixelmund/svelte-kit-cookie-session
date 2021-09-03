@@ -19,6 +19,6 @@
   },
   "type": "module",
   "dependencies": {
-    "svelte-kit-cookie-session": "^1.3.2"
+    "svelte-kit-cookie-session": "^1.4.0"
   }
 }
