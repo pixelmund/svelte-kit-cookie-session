@@ -6,12 +6,16 @@
     "type": "git",
     "url": "https://github.com/pixelmund/svelte-kit-cookie-session.git"
   },
+  "type": "module",
   "module": "dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js"
+  },
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "dev": "tsc -w",
-    "test": "uvu -r ts-node/register tests",
+    "test": "loadr -- uvu tests",
     "prepublishOnly": "npm run build && npm run test"
   },
   "keywords": [
@@ -24,16 +28,15 @@
   ],
   "author": "pixelmund",
   "license": "MIT",
-  "dependencies": {
-  },
   "devDependencies": {
     "@sveltejs/kit": "^1.0.0-next.111",
     "@types/cookie": "^0.4.1",
     "@types/node": "^14.14.35",
+    "loadr": "^0.1.1",
     "rimraf": "^3.0.2",
     "svelte": "^3.35.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3",
-    "uvu": "^0.5.1"
+    "uvu": "^0.6.0-next.1"
   }
 }

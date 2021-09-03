@@ -4,21 +4,23 @@ specifiers:
   '@sveltejs/kit': ^1.0.0-next.111
   '@types/cookie': ^0.4.1
   '@types/node': ^14.14.35
+  loadr: ^0.1.1
   rimraf: ^3.0.2
   svelte: ^3.35.0
   ts-node: ^9.1.1
   typescript: ^4.2.3
-  uvu: ^0.5.1
+  uvu: ^0.6.0-next.1
 
 devDependencies:
   '@sveltejs/kit': 1.0.0-next.131_svelte@3.38.3
   '@types/cookie': 0.4.1
   '@types/node': 14.17.5
+  loadr: 0.1.1
   rimraf: 3.0.2
   svelte: 3.38.3
   ts-node: 9.1.1_typescript@4.3.5
   typescript: 4.3.5
-  uvu: 0.5.1
+  uvu: 0.6.0-next.1
 
 packages:
 
@@ -201,6 +203,12 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
+  /loadr/0.1.1:
+    resolution: {integrity: sha512-lkI9ckI3cF+DQMbc0Fn/PgeMXQEL4gcOqUQQ1/tEzttQ2CPJvWzBsa9THeS4kqYQ2oNUVuDfk1+7PBZenvp3og==}
+    engines: {node: '>=12'}
+    hasBin: true
+    dev: true
+
   /magic-string/0.25.7:
     resolution: {integrity: sha512-4CrMT5DOHTDk4HYDlzmwu4FVCcIYI8gauveasrdCu2IKIFOJ3f0v/8MDGJCDL9oD2ppz/Av1b0Nj345H9M+XIA==}
     dependencies:
@@ -355,8 +363,8 @@ packages:
     hasBin: true
     dev: true
 
-  /uvu/0.5.1:
-    resolution: {integrity: sha512-JGxttnOGDFs77FaZ0yMUHIzczzQ5R1IlDeNW6Wymw6gAscwMdAffVOP6TlxLIfReZyK8tahoGwWZaTCJzNFDkg==}
+  /uvu/0.6.0-next.1:
+    resolution: {integrity: sha512-YXBhSHY/tlP/ulBi+JDvLGFgDhmVUALufkFAxF61S6hUnI4IQ/9KT0tEVNTLLdzoPZs+9vpjLUTYJOWxffciPQ==}
     engines: {node: '>=8'}
     hasBin: true
     dependencies:

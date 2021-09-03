@@ -1,8 +1,8 @@
-import { BinaryLike } from "./types";
+import type { BinaryLike } from "./types";
 import {
   makeStringDecrypterSync,
   makeStringEncrypterSync,
-} from "./make-crypter";
+} from "./make-crypter.js";
 
 const encryptString = makeStringEncrypterSync({ algorithm: "aes-256-gcm" });
 const decryptString = makeStringDecrypterSync({ algorithm: "aes-256-gcm" });

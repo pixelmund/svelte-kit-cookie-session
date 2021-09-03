@@ -14,7 +14,7 @@ import {
   randomBytes,
 } from "crypto";
 
-import {
+import type {
   DecrypterOptions,
   EncrypterOptions,
   EncryptionFunction,

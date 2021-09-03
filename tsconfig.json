@@ -2,7 +2,7 @@
   "ts-node": {
     "transpileOnly": true,
     "compilerOptions": {
-      "module": "commonjs"
+      "module": "ESNext"
     },
     "include": ["tests/**/*"]
   },
