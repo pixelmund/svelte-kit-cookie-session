@@ -24,20 +24,17 @@ npm i svelte-kit-cookie-session
 yarn add svelte-kit-cookie-session
 ```
 
-
-
 > :warning: **Because of some vite issues [#14](https://github.com/pixelmund/svelte-kit-cookie-session/issues/14) [#15](https://github.com/pixelmund/svelte-kit-cookie-session/issues/15)**: you should add the following to your `svelte.config`!
-
 
 ```js
 const config = {
-    kit: {
-      vite: {
-        optimizeDeps: {
-          exclude: ['svelte-kit-cookie-session'],
-        },
+  kit: {
+    vite: {
+      optimizeDeps: {
+        exclude: ["svelte-kit-cookie-session"],
       },
     },
+  },
 };
 ```
 
@@ -94,8 +91,7 @@ Then you can use multiple secrets:
 
 ```js
 export const handle = handleSession({
-  secret:
-    "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
+  secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
 });
 ```
 
@@ -178,5 +174,31 @@ export async function put({ locals, body }) {
 ```js
 handleSession({
   rolling: true,
+});
+```
+
+### Express/Connect Integration
+
+This library can integrate with express, polka or any other connect compatible middleware layer. 
+
+```ts
+import express from "express";
+import { sessionMiddleware } from "svelte-kit-cookie-session";
+
+const app = express();
+
+app.use(
+  sessionMiddleware({ secret: "A_VERY_SECRET_SECRET_AT_LEAST_32_CHARS_LONG" })
+);
+
+app.get("/", (req, res) => {
+  const sessionData = req.session.data;
+  const views = sessionData.views ?? 0;
+  req.session.data = { views: views + 1 };
+  return res.json({ views: req.session.data.views });
+});
+
+app.listen(4004, () => {
+  console.log("Listening on http://localhost:4004");
 });
 ```
