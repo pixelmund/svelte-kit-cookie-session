@@ -122,6 +122,8 @@ Notes:
 
 `If the session already exists, the data get's updated but the expiration time stays the same`
 
+`The only way to set the session is setting the locals.session.data to an object`
+
 > src/routes/login.ts
 
 ```js
@@ -131,6 +133,28 @@ export async function post({ locals, body }) {
 
   return {
     body: locals.session.data,
+  };
+}
+```
+
+### Accessing The Session
+
+`After initializing the session, your locals will be filled with a session JS Proxy, this Proxy automatically sets the cookie if you set the locals.session.data to something and receive the current data via locals.session.data only. To see this in action add a console.log(locals.session) it will be empty. Only if you add an console.log(locals.session.data) and access the data it will output the current data. So if you wonder why is my session not filled, this is why`
+
+> src/routes/api/me.ts
+
+```js
+/** @type {import('@sveltejs/kit').RequestHandler} */
+export async function get({ locals, body }) {
+  // console.log(locals.session) will be empty
+
+  // Access your data via locals.session.data -> this should always be an object.
+  const currentUser = locals.session.data?.user;
+
+  return {
+    body: {
+      me: currentUser,
+    },
   };
 }
 ```
@@ -179,7 +203,7 @@ handleSession({
 
 ### Express/Connect Integration
 
-This library can integrate with express, polka or any other connect compatible middleware layer. 
+This library can integrate with express, polka or any other connect compatible middleware layer.
 
 ```ts
 import express from "express";
