@@ -4,6 +4,10 @@
 
 ---
 
+Check out, [Svemix](https://github.com/svemix/svemix) if you want to have a better developer experience using **SvelteKit**. Svemix can be seen as an full stack addition to **Kit**. It let's you write server side code inside .svelte files, has session handling on the next level with auto client session updates, loaders and actions that run on the server and even working with javascript disabled, also provides you with meta/SEO handling.
+
+--- 
+
 **This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via a encrypted seal. This provides strong client/"stateless" sessions.
 
 The seal stored on the client contains the session data, not your server, making it a "stateless" session from the server point of view. This is a different take than `express-session` where the cookie contains a session ID to then be used to map data on the server-side.
