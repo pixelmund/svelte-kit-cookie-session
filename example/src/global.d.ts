@@ -6,7 +6,3 @@ interface Locals {
   }>;
 }
 
-type RequestHandler<Body = unknown> = import("@sveltejs/kit").RequestHandler<
-  Locals,
-  Body
->;

@@ -9,19 +9,17 @@ export const handle = handleSession(
   {
     secret: "A_VERY_SECRET_SECRET_32_CHARS_LONG",
   },
-  async function ({ request, resolve }) {
-    const response = await resolve(request);
+  async function ({ event, resolve }) {
+    const response = await resolve(event);
 
     if (!response.body || !response.headers) {
       return response;
     }
 
-    if (response.headers["content-type"] === "text/html") {
-      let theme = request.locals.session.data?.theme ?? "light";
-      response.body = (response.body as string).replace(
-        "%session.theme%",
-        theme
-      );
+    if (response.headers.get('content-type').startsWith('text/html')) {
+      let theme = event.locals.session.data?.theme ?? "light";
+      const body = await response.text();
+      return new Response(body.replace("%session.theme%", theme), response);
     }
 
     return response;

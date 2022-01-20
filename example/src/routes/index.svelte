@@ -10,10 +10,11 @@
 
     if (!response.ok) return;
 
-    const theme = await response.json();
+    const data = await response.json();
+    $session = data;
 
     document.documentElement.classList.remove("dark", "light");
-    document.documentElement.classList.add(theme.currentTheme);
+    document.documentElement.classList.add(data.theme);
   }
 
   async function deleteSession() {
