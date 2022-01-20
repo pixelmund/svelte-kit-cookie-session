@@ -1,5 +1,5 @@
-import { initializeSession } from "./initialize.js";
-import type { SessionOptions, Session } from "./initialize";
+import initializeSession from "./core.js";
+import type { SessionOptions, Session } from "./types";
 import type { IncomingMessage, ServerResponse } from "http";
 
 declare global {
@@ -37,7 +37,7 @@ export function sessionMiddleware<
 >(options: SessionOptions): (req: Req, res: Res, next: () => void) => any {
   return (req, res, next) => {
     const session: any = initializeSession<SessionType>(
-      { cookie: req.headers.cookie! },
+      req.headers.cookie || '',
       options
     );
 
