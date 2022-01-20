@@ -18,6 +18,11 @@ The seal stored on the client contains the session data, not your server, making
 
 ---
 
+## Upgrading from v1 to v2
+
+Please use any version above `@sveltejs/kit@1.0.0-next.232`, all older versions are not compatible with v2 anymore. Stick to `1.4.0` if you like to use older versions of `kit`.
+There are no major breaking changes, besides some internal refactoring and switching from JS Proxy to Getters/Setters which should end up in a better performance. We also only decrypt the session data now if you access the session.data. Also the session data returns undefined now if not existing instead of an empty object.
+
 ## Installation
 
 Install into `dependencies`
@@ -73,11 +78,11 @@ export const handle = handleSession(
   {
     secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
   },
-  ({ request, resolve }) => {
-    // request.locals is populated with the session `request.locals.session`
+  ({ event, resolve }) => {
+    // event.locals is populated with the session `event.locals.session`
 
     // Do anything you want here
-    return resolve(request);
+    return resolve(event);
   }
 );
 ```
@@ -132,8 +137,8 @@ Notes:
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function post({ locals, body }) {
-  locals.session.data = body;
+export async function post({ locals, request }) {
+  locals.session.data = { loggedIn: true };
 
   return {
     body: locals.session.data,
@@ -149,7 +154,7 @@ export async function post({ locals, body }) {
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function get({ locals, body }) {
+export async function get({ locals, request }) {
   // console.log(locals.session) will be empty
 
   // Access your data via locals.session.data -> this should always be an object.
@@ -186,7 +191,7 @@ export async function del({ locals }) {
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
-export async function put({ locals, body }) {
+export async function put({ locals, request }) {
   locals.session.refresh(/** Optional new expiration time in days */);
 
   return {
