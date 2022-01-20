@@ -75,7 +75,7 @@ test("session.destroy() should delete the session cookie and data", () => {
   session.data = initialData;
 
   const cookieString = session["set-cookie"];
-  
+
   session.destroy();
 
   const afterCookieString = session["set-cookie"];
@@ -92,7 +92,7 @@ test("Session should be initialized with the same data from a given session cook
   const cookie = getCookieValue(newSession["set-cookie"]);
 
   const sessionWithInitialCookie = cookieSession(cookie, { secret: SECRET });
-  
+
   const sessionData = sessionWithInitialCookie.data;
 
   assert.equal(
@@ -108,7 +108,7 @@ test("Session should be initialized with the same data from a given session cook
 });
 
 test("if the session exists setting session.data should update the data but keep the expiration date", async () => {
-  const oldSession = cookieSession(emptyHeaders, { secret: SECRET }) as any;
+  const oldSession = cookieSession(emptyHeaders, { secret: SECRET });
 
   oldSession.data = initialData;
   const cookie = getCookieValue(oldSession["set-cookie"]);
@@ -136,10 +136,15 @@ test("if the session exists setting session.data should update the data but keep
     "Data should be set correctly"
   );
 
-  if (
-    new Date(oldSession.data.expires).getTime() !==
-    new Date(sessionData.expires).getTime()
-  ) {
+  const initialExpires = new Date(oldSession.data.expires).getTime();
+  const afterExpires = new Date(sessionData.expires).getTime();
+
+  if (afterExpires >= initialExpires - 2000) {
+  } else {
+    throw new Error("Expires should not change");
+  }
+  if (afterExpires < initialExpires + 2000) {
+  } else {
     throw new Error("Expires should not change");
   }
 
@@ -179,7 +184,6 @@ test("Session should only decrypt data with the same secret and throw an error o
 });
 
 test("Session should handle password rotation", () => {
-  
   const newSession = cookieSession(emptyHeaders, { secret: SECRET });
 
   newSession.data = initialData;
@@ -200,7 +204,7 @@ test("Session should handle password rotation", () => {
       username: initialData.username,
     },
     {
-      username: sessionWithNewSecret.data.username
+      username: sessionWithNewSecret.data.username,
     },
     "Password rotated secrets should result in the same session data"
   );
@@ -228,7 +232,7 @@ test("Session should handle password rotation", () => {
       username: initialData.username,
     },
     {
-      username: sessionWithNewestSecret.data.username
+      username: sessionWithNewestSecret.data.username,
     },
     "Password rotated secrets should result in the same session data"
   );
