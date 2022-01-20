@@ -20,6 +20,7 @@ The seal stored on the client contains the session data, not your server, making
 
 ## Upgrading from v1 to v2
 
+Please use any version above `@sveltejs/kit@1.0.0-next.232`, all older versions are not compatible with v2 anymore. Stick to `1.4.0` if you like to use older versions of `kit`.
 There are no major breaking changes, besides some internal refactoring and switching from JS Proxy to Getters/Setters which should end up in a better performance. We also only decrypt the session data now if you access the session.data. Also the session data returns undefined now if not existing instead of an empty object.
 
 ## Installation
