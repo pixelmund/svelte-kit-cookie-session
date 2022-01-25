@@ -1,4 +1,4 @@
-import CookieSession from './core';
+import CookieSession from './core.js';
 import type { Handle } from '@sveltejs/kit';
 import type { Session, SessionOptions } from './types';
 
