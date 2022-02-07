@@ -1,14 +1,14 @@
 import CookieSession from './core.js';
 import type { Handle } from '@sveltejs/kit';
-import type { Session, SessionOptions } from './types';
+import type { SessionOptions } from './types';
 
-export function handleSession<Locals extends { session: Session }>(
+export function handleSession(
 	options: SessionOptions,
-	passedHandle: Handle<Locals> = async ({ event, resolve }) => resolve(event)
-) {
+	passedHandle: Handle = async ({ event, resolve }) => resolve(event)
+) : Handle {
 	return async function handle({ event, resolve }) {
 		// We type it as any here to avoid typescript complaining about set-cookie;
-		const session: any = CookieSession(event.request.headers, options);
+		const session : any = CookieSession(event.request.headers, options);
 		event.locals.session = session;
 
 		const response = await passedHandle({ event, resolve });
@@ -21,5 +21,5 @@ export function handleSession<Locals extends { session: Session }>(
 		response.headers.append('set-cookie', sessionCookie);
 
 		return response;
-	} as Handle<Locals>;
+	};
 }
