@@ -145,9 +145,7 @@ export default function initializeSession<SessionType = Record<string, any>>(
             "&id=" +
             options.secrets[0].id,
       {
-        httpOnly: options.cookie.httpOnly,
-        sameSite: options.cookie.sameSite,
-        path: options.cookie.path,
+        ...options.cookie,
         maxAge: destroy ? undefined : maxAge,
         expires: destroy ? new Date(Date.now() - 360000000) : undefined,
       }
