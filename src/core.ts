@@ -16,6 +16,11 @@ export default function initializeSession<SessionType = Record<string, any>>(
     throw new Error("Please provide at least one secret");
   }
 
+  const isSecureCookie =
+    typeof process !== "undefined"
+      ? process.env.NODE_ENV !== "development"
+      : false;
+
   const options = {
     key: userOptions.key ?? "kit.session",
     expiresInDays: userOptions.expires ?? 7,
@@ -24,6 +29,8 @@ export default function initializeSession<SessionType = Record<string, any>>(
       httpOnly: userOptions?.cookie?.httpOnly ?? true,
       sameSite: userOptions?.cookie?.sameSite ?? true,
       path: userOptions?.cookie?.path ?? "/",
+      domain: userOptions?.cookie?.domain ?? undefined,
+      secure: userOptions?.cookie?.secure ?? isSecureCookie,
     },
     rolling: userOptions?.rolling ?? false,
     secrets: Array.isArray(userOptions.secret)
@@ -218,7 +225,7 @@ export default function initializeSession<SessionType = Record<string, any>>(
   }
 
   function reEncryptSession() {
-    if(sessionData){
+    if (sessionData) {
       sessionState.shouldSendToClient = true;
       session.data = { ...sessionData };
     }
