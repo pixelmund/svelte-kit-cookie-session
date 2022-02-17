@@ -1,34 +1,36 @@
 import initializeSession from "./core.js";
-import type { SessionOptions, Session } from "./types";
+import type { SessionOptions } from "./types";
 import type { IncomingMessage, ServerResponse } from "http";
 
 declare global {
   namespace Express {
     interface Request {
-      session: Session<SessionData>;
+      session: import("./types").Session<Session.SessionData>;
+      cookies: Record<string, string>;
     }
   }
   namespace Polka {
     interface Request {
-      session: Session<SessionData>;
+      session: import("./types").Session<Session.SessionData>;
     }
   }
+}
+
+declare namespace Session {
+  interface SessionData {}
 }
 
 /**
  * This interface allows you to declare additional properties on your session object using [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
  *
  * @example
- * declare module 'svelte-kit-cookie-session' {
+ * declare namespace Session {
  *     interface SessionData {
  *         views: number;
  *     }
  * }
  *
  */
-interface SessionData {
-  [key: string]: any;
-}
 
 export function sessionMiddleware<
   Req extends { headers: IncomingMessage["headers"] },
@@ -36,13 +38,15 @@ export function sessionMiddleware<
   SessionType = Record<string, any>
 >(options: SessionOptions): (req: Req, res: Res, next: () => void) => any {
   return (req, res, next) => {
-    const session: any = initializeSession<SessionType>(
-      req.headers.cookie || '',
+    const { session, cookies } = initializeSession<SessionType>(
+      req.headers.cookie || "",
       options
     );
 
     //@ts-ignore
     req.session = session;
+    //@ts-ignore
+    req.cookies = cookies;
 
     const setSessionHeaders = () => {
       //@ts-ignore This can exist
