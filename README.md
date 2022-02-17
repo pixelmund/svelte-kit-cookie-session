@@ -6,7 +6,7 @@
 
 Check out, [Svemix](https://github.com/svemix/svemix) if you want to have a better developer experience using **SvelteKit**. Svemix can be seen as an full stack addition to **Kit**. It let's you write server side code inside .svelte files, has session handling on the next level with auto client session updates, loaders and actions that run on the server and even working with javascript disabled, also provides you with meta/SEO handling.
 
---- 
+---
 
 **This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via a encrypted seal. This provides strong client/"stateless" sessions.
 
@@ -45,6 +45,32 @@ const config = {
     },
   },
 };
+```
+
+Update your `app.d.ts` file to look something like:
+
+```ts
+/// <reference types="@sveltejs/kit" />
+
+interface SessionData {
+  // Your session data
+  views: number;
+}
+
+// See https://kit.svelte.dev/docs#typescript
+// for information about these interfaces
+declare namespace App {
+  interface Locals {
+    session: import("svelte-kit-cookie-session").Session<SessionData>;
+    cookies: Record<string, string>; // all parsed cookies are automatically set from handleSession to avoid overhead
+  }
+
+  interface Platform {}
+
+  interface Session extends SessionData {}
+
+  interface Stuff {}
+}
 ```
 
 ## Usage

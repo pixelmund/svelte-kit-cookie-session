@@ -10,7 +10,6 @@ export const handle = handleSession(
     secret: "A_VERY_SECRET_SECRET_32_CHARS_LONG",
   },
   async function ({ event, resolve }) {
-    
     const response = await resolve(event, {
       transformPage: ({ html }) => {
         const theme = event.locals.session.data?.theme ?? "light";

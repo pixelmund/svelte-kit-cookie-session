@@ -5,13 +5,13 @@ specifiers:
   '@sveltejs/kit': next
   svelte: ^3.46.4
   svelte-check: ^2.4.5
-  svelte-kit-cookie-session: ^2.0.5
+  svelte-kit-cookie-session: ^2.1.0
   svelte-preprocess: ^4.10.3
   tslib: ^2.3.1
   typescript: ^4.5.5
 
 dependencies:
-  svelte-kit-cookie-session: 2.0.5
+  svelte-kit-cookie-session: 2.1.0
 
 devDependencies:
   '@sveltejs/adapter-node': 1.0.0-next.68
@@ -768,8 +768,8 @@ packages:
       svelte: 3.46.4
     dev: true
 
-  /svelte-kit-cookie-session/2.0.5:
-    resolution: {integrity: sha512-IX1IXtn42UTz/isem1LqH0SAZdCx6Z6Iu2V4Q83V2EScFbXZWfeFY08Azl8ZrPKdIDhSNHBLAAumRjA6TBxCvQ==}
+  /svelte-kit-cookie-session/2.1.0:
+    resolution: {integrity: sha512-23YyQ3B1YNamlDc1+OaiX74eoRA1ipZO8eBVUkUVtlJJdcLvWN60Zwvh/PmjoAvI/6v3A2yXOPCIkaIhU4u4fg==}
     dev: false
 
   /svelte-preprocess/4.10.3_svelte@3.46.4+typescript@4.5.5:
