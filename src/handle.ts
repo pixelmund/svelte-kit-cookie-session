@@ -1,4 +1,3 @@
-// @ts-nocheck
 import CookieSession from "./core.js";
 import type { Handle } from "@sveltejs/kit";
 import type { SessionOptions } from "./types";
