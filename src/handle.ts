@@ -1,25 +1,32 @@
-import CookieSession from './core.js';
-import type { Handle } from '@sveltejs/kit';
-import type { SessionOptions } from './types';
+import CookieSession from "./core.js";
+import type { Handle } from "@sveltejs/kit";
+import type { SessionOptions } from "./types";
 
 export function handleSession(
-	options: SessionOptions,
-	passedHandle: Handle = async ({ event, resolve }) => resolve(event)
-) : Handle {
-	return async function handle({ event, resolve }) {
-		// We type it as any here to avoid typescript complaining about set-cookie;
-		const session : any = CookieSession(event.request.headers, options);
-		event.locals.session = session;
+  options: SessionOptions,
+  passedHandle: Handle = async ({ event, resolve }) => resolve(event)
+): Handle {
+  return async function handle({ event, resolve }) {
+    const { session, cookies } = CookieSession(
+      event.request.headers,
+      options
+    ) as any as {
+      session: { "set-cookie": string };
+      cookies: Record<string, string>;
+    };
 
-		const response = await passedHandle({ event, resolve });
+    event.locals.session = session;
+    event.locals.cookies = cookies;
 
-		if (!session['set-cookie'] || !response?.headers) {
-			return response;
-		}
+    const response = await passedHandle({ event, resolve });
 
-		const sessionCookie = session['set-cookie'];
-		response.headers.append('set-cookie', sessionCookie);
+    if (!session["set-cookie"]) {
+      return response;
+    }
 
-		return response;
-	};
+    const sessionCookie = session["set-cookie"];
+    response.headers.append("set-cookie", sessionCookie);
+
+    return response;
+  };
 }

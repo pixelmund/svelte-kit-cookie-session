@@ -145,7 +145,11 @@ export default function initializeSession<SessionType = Record<string, any>>(
             "&id=" +
             options.secrets[0].id,
       {
-        ...options.cookie,
+        httpOnly: options.cookie.httpOnly,
+        path: options.cookie.path,
+        sameSite: options.cookie.sameSite,
+        secure: options.cookie.secure,
+        domain: options.cookie?.domain,
         maxAge: destroy ? undefined : maxAge,
         expires: destroy ? new Date(Date.now() - 360000000) : undefined,
       }
@@ -229,5 +233,11 @@ export default function initializeSession<SessionType = Record<string, any>>(
     }
   }
 
-  return session as any as Session<SessionDataWithExpires | undefined>;
+  return {
+    session,
+    cookies,
+  } as {
+    session: Session<SessionDataWithExpires | undefined>;
+    cookies: Record<string, string>;
+  };
 }

@@ -17,7 +17,7 @@ test("initialize and set session benchmark", () => {
   console.time("init-set-session");
 
   for (let index = 0; index < 1000; index++) {
-    const session = cookieSession(emptyHeaders, {
+    const { session } = cookieSession(emptyHeaders, {
       secret: SECRET,
     }) as any;
     session.data = initialData;
@@ -27,7 +27,9 @@ test("initialize and set session benchmark", () => {
 });
 
 test("initialize and and dont get session data benchmark", () => {
-  const newSession = cookieSession(emptyHeaders, { secret: SECRET }) as any;
+  const { session: newSession } = cookieSession(emptyHeaders, {
+    secret: SECRET,
+  }) as any;
 
   newSession.data = initialData;
   const cookie = getCookieValue(newSession["set-cookie"]);
@@ -41,7 +43,9 @@ test("initialize and and dont get session data benchmark", () => {
 });
 
 test("initialize and get session data benchmark", () => {
-  const newSession = cookieSession(emptyHeaders, { secret: SECRET }) as any;
+  const { session: newSession } = cookieSession(emptyHeaders, {
+    secret: SECRET,
+  }) as any;
 
   newSession.data = initialData;
   const cookie = getCookieValue(newSession["set-cookie"]);
@@ -49,7 +53,9 @@ test("initialize and get session data benchmark", () => {
   console.time("decode-session");
 
   for (let index = 0; index < 1000; index++) {
-    const sessionWithInitialCookie = cookieSession(cookie, { secret: SECRET });
+    const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+      secret: SECRET,
+    });
     sessionWithInitialCookie.data;
   }
   console.timeEnd("decode-session");
