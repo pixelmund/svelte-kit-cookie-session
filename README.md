@@ -113,6 +113,25 @@ export const handle = handleSession(
   }
 );
 ```
+In case you're using [sequence()](https://kit.svelte.dev/docs/modules#sveltejs-kit-hooks-sequence), do this 
+```js
+
+const sessionHandler = handleSession(
+  {
+    secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
+  },
+  ({ event, resolve }) => {
+    // event.locals is populated with the session `event.locals.session`
+    // event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
+
+    // Do anything you want here
+    return resolve(event);
+  }
+);
+
+export const handle = sequence(sessionHandler, first, second)
+```
+
 
 ### ♻️ Secret rotation is supported. It allows you to change the secret used to sign and encrypt sessions while still being able to decrypt sessions that were created with a previous secret.
 
