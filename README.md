@@ -229,11 +229,13 @@ export async function put({ locals, request }) {
 
 ### Refresh the session expiration on every request `Rolling` -> default is false!
 
+You can also specify a percentage from 1 to 100 which refreshes the session when a percentage of the expiration date is met.
+
 > Note this currently only fires if a session is already existing
 
 ```js
 handleSession({
-  rolling: true,
+  rolling: true, // or 1-100 for percentage o the expiry date met,
 });
 ```
 
