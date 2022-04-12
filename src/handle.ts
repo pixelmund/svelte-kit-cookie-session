@@ -1,3 +1,5 @@
+// @ts-nocheck 
+
 import CookieSession from "./core.js";
 import type { Handle } from "@sveltejs/kit";
 import type { SessionOptions } from "./types";
@@ -15,9 +17,7 @@ export function handleSession(
       cookies: Record<string, string>;
     };
 
-    // @ts-ignore
     event.locals.session = session;
-    // @ts-ignore
     event.locals.cookies = cookies;
 
     const response = await passedHandle({ event, resolve });
