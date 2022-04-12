@@ -33,20 +33,6 @@ npm i svelte-kit-cookie-session
 yarn add svelte-kit-cookie-session
 ```
 
-> :warning: **Because of some vite issues [#14](https://github.com/pixelmund/svelte-kit-cookie-session/issues/14) [#15](https://github.com/pixelmund/svelte-kit-cookie-session/issues/15)**: you should add the following to your `svelte.config`!
-
-```js
-const config = {
-  kit: {
-    vite: {
-      optimizeDeps: {
-        exclude: ["svelte-kit-cookie-session"],
-      },
-    },
-  },
-};
-```
-
 Update your `app.d.ts` file to look something like:
 
 ```ts
@@ -112,6 +98,20 @@ export const handle = handleSession(
     return resolve(event);
   }
 );
+```
+
+In case you're using [sequence()](https://kit.svelte.dev/docs/modules#sveltejs-kit-hooks-sequence), do this
+
+```js
+const sessionHandler = handleSession({
+  secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
+});
+export const handle = sequence(sessionHandler, ({ resolve, event }) => {
+  // event.locals is populated with the session `event.locals.session`
+  // event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
+  // Do anything you want here
+  return resolve(event);
+});
 ```
 
 ### ♻️ Secret rotation is supported. It allows you to change the secret used to sign and encrypt sessions while still being able to decrypt sessions that were created with a previous secret.

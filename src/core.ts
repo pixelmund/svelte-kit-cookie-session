@@ -217,8 +217,25 @@ export default function initializeSession<SessionType = Record<string, any>>(
   };
 
   // If rolling is activated and the session exists we refresh the session on every request.
-  if (userOptions?.rolling && !sessionState.invalidDate && sessionData) {
-    session.refresh();
+  if (options?.rolling) {
+    // Fake access session data:
+    const _sd = session.data;
+
+    if (typeof options.rolling === "number" && _sd?.expires) {
+      // refreshes when a percentage of the expiration date is met
+      const differenceInSeconds = Math.round(
+        new Date(_sd.expires).getTime() / 1000 - new Date().getTime() / 1000
+      );
+
+      if (
+        differenceInSeconds <
+        (options.rolling / 100) * options.cookie.maxAge
+      ) {
+        session.refresh();
+      }
+    } else {
+      session.refresh();
+    }
   }
 
   function destroySession() {

@@ -70,6 +70,55 @@ test("session.refresh() should refresh the session expiration time", async () =>
   }
 });
 
+test("setting rolling should refresh the session every time", async () => {
+  const { session: newSession } = cookieSession(emptyHeaders, {
+    secret: SECRET,
+    rolling: true,
+  });
+  newSession.data = initialData;
+  const newSessionData = newSession.data;
+
+  const cookie = getCookieValue(newSession["set-cookie"]);
+
+  await sleep(4000);
+
+  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+    secret: SECRET,
+    rolling: true,
+  });
+
+  const sessionData = sessionWithInitialCookie.data;
+
+  if (new Date(newSessionData.expires).getTime() === new Date(sessionData.expires).getTime()) {
+    throw new Error("Expiration date should be refreshed");
+  }
+});
+
+test("setting rolling should refresh the session if a certain percentage of the expiry date is met", async () => {
+  const { session: newSession } = cookieSession(emptyHeaders, {
+    secret: SECRET,
+    expires: 1,
+  });
+  newSession.data = initialData;
+  const newSessionData = newSession.data;
+
+  const cookie = getCookieValue(newSession["set-cookie"]);
+
+  await sleep(5000);
+
+  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+    secret: SECRET,
+    expires: 1,
+    rolling: 99.9999999999,
+  });
+
+  const sessionData = sessionWithInitialCookie.data;
+
+  if (new Date(newSessionData.expires).getTime() === new Date(sessionData.expires).getTime()) {
+    throw new Error("Expiration date should be refreshed");
+  }
+});
+
 test("session.destroy() should delete the session cookie and data", () => {
   const { session } = cookieSession(emptyHeaders, { secret: SECRET });
   session.data = initialData;

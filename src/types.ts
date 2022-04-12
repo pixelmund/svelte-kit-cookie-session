@@ -5,7 +5,7 @@ export interface SessionOptions {
   key?: string;
   secret: CBinaryLike | { id: number; secret: CBinaryLike }[];
   expires?: number;
-  rolling?: boolean;
+  rolling?: true | number;
   cookie?: Omit<CookieSerializeOptions, "expires" | "maxAge" | "encode">;
 }
 

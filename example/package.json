@@ -9,16 +9,16 @@
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^1.0.0-next.68",
+    "@sveltejs/adapter-node": "^1.0.0-next.73",
     "@sveltejs/kit": "next",
-    "svelte": "^3.46.4",
-    "svelte-check": "^2.4.5",
-    "svelte-preprocess": "^4.10.3",
+    "svelte": "^3.47.0",
+    "svelte-check": "^2.6.0",
+    "svelte-preprocess": "^4.10.5",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.5"
+    "typescript": "^4.6.3"
   },
   "type": "module",
   "dependencies": {
-    "svelte-kit-cookie-session": "^2.1.0"
+    "svelte-kit-cookie-session": "^2.1.2"
   }
 }
