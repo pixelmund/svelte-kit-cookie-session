@@ -15,7 +15,9 @@ export function handleSession(
       cookies: Record<string, string>;
     };
 
+    // @ts-ignore
     event.locals.session = session;
+    // @ts-ignore
     event.locals.cookies = cookies;
 
     const response = await passedHandle({ event, resolve });

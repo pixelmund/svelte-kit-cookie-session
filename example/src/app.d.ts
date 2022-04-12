@@ -1,7 +1,8 @@
 /// <reference types="@sveltejs/kit" />
 
 interface SessionData {
-  theme: string;
+  // Your session data
+  views: number;
 }
 
 // See https://kit.svelte.dev/docs#typescript
@@ -9,7 +10,7 @@ interface SessionData {
 declare namespace App {
   interface Locals {
     session: import("svelte-kit-cookie-session").Session<SessionData>;
-    cookies: Record<string, string>;
+    cookies: Record<string, string>; // all parsed cookies are automatically set from handleSession to avoid overhead
   }
 
   interface Platform {}
