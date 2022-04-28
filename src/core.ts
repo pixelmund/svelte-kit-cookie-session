@@ -27,7 +27,7 @@ export default function initializeSession<SessionType = Record<string, any>>(
     cookie: {
       maxAge: daysToMaxage(userOptions.expires ?? 7),
       httpOnly: userOptions?.cookie?.httpOnly ?? true,
-      sameSite: userOptions?.cookie?.sameSite ?? true,
+      sameSite: userOptions?.cookie?.sameSite ?? "lax",
       path: userOptions?.cookie?.path ?? "/",
       domain: userOptions?.cookie?.domain ?? undefined,
       secure: userOptions?.cookie?.secure ?? isSecureCookie,
