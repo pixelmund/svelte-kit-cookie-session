@@ -1,5 +1,9 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
+import { webcrypto } from "crypto";
+// @ts-expect-error
+globalThis.crypto = webcrypto;
+
 import { cookieSession } from "../../src/index.js";
 
 const emptyHeaders = "";
@@ -14,12 +18,14 @@ const initialData = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const getCookieValue = (cookie: string) => cookie.split(";")[0].trim();
+const getCookieValue = (cookie: string) => {
+  return cookie.split(";")[0].trim();
+};
 
-test("cookieSession should initialize the session as an object", () => {
-  const { session } = cookieSession(emptyHeaders, {
+test("cookieSession should initialize the session as an object", async () => {
+  const { session } = (await cookieSession(emptyHeaders, {
     secret: SECRET,
-  }) as any;
+  })) as any;
 
   assert.type(
     session,
@@ -28,12 +34,12 @@ test("cookieSession should initialize the session as an object", () => {
   );
 });
 
-test("session.data = data should be set correctly", () => {
-  const { session } = cookieSession(emptyHeaders, {
+test("session.data(data) should be set correctly", async () => {
+  const { session } = (await cookieSession(emptyHeaders, {
     secret: SECRET,
-  }) as any;
-  session.data = initialData;
-  const sessionData = session.data;
+  })) as any;
+  await session.data(initialData);
+  const sessionData = await session.data();
   assert.equal(
     {
       username: sessionData.username,
@@ -46,20 +52,22 @@ test("session.data = data should be set correctly", () => {
   );
 });
 
-test("session.data = data should set the set-cookie Header", () => {
-  const { session } = cookieSession(emptyHeaders, {
+test("session.data(data) should set the set-cookie Header", async () => {
+  const { session } = (await cookieSession(emptyHeaders, {
     secret: SECRET,
-  }) as any;
+  })) as any;
   assert.equal(session["set-cookie"], undefined);
-  session.data = initialData;
+  await session.data(initialData);
   assert.type(session["set-cookie"], "string");
 });
 
 test("session.refresh() should refresh the session expiration time", async () => {
-  const { session } = cookieSession(emptyHeaders, { secret: SECRET }) as any;
+  const { session } = (await cookieSession(emptyHeaders, {
+    secret: SECRET,
+  })) as any;
 
-  session.data = initialData;
-  const sessionData = session.data;
+  await session.data(initialData);
+  const sessionData = await session.data();
 
   await sleep(100);
 
@@ -71,61 +79,67 @@ test("session.refresh() should refresh the session expiration time", async () =>
 });
 
 test("setting rolling should refresh the session every time", async () => {
-  const { session: newSession } = cookieSession(emptyHeaders, {
+  const { session: newSession } = await cookieSession(emptyHeaders, {
     secret: SECRET,
     rolling: true,
   });
-  newSession.data = initialData;
-  const newSessionData = newSession.data;
+  await newSession.data(initialData);
+  const newSessionData = await newSession.data();
 
   const cookie = getCookieValue(newSession["set-cookie"]);
 
   await sleep(4000);
 
-  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+  const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
     secret: SECRET,
     rolling: true,
   });
 
-  const sessionData = sessionWithInitialCookie.data;
+  const sessionData = await sessionWithInitialCookie.data();
 
-  if (new Date(newSessionData.expires).getTime() === new Date(sessionData.expires).getTime()) {
+  if (
+    new Date(newSessionData.expires).getTime() ===
+    new Date(sessionData.expires).getTime()
+  ) {
     throw new Error("Expiration date should be refreshed");
   }
 });
 
 test("setting rolling should refresh the session if a certain percentage of the expiry date is met", async () => {
-  const { session: newSession } = cookieSession(emptyHeaders, {
+  const { session: newSession } = await cookieSession(emptyHeaders, {
     secret: SECRET,
     expires: 1,
   });
-  newSession.data = initialData;
-  const newSessionData = newSession.data;
+  await newSession.data(initialData);
+  const newSessionData = await newSession.data();
 
   const cookie = getCookieValue(newSession["set-cookie"]);
 
   await sleep(5000);
 
-  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+  const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
     secret: SECRET,
     expires: 1,
     rolling: 99.9999999999,
   });
 
-  const sessionData = sessionWithInitialCookie.data;
+  const sessionData = await sessionWithInitialCookie.data();
 
-  if (new Date(newSessionData.expires).getTime() === new Date(sessionData.expires).getTime()) {
+  if (
+    new Date(newSessionData.expires).getTime() ===
+    new Date(sessionData.expires).getTime()
+  ) {
     throw new Error("Expiration date should be refreshed");
   }
 });
 
-test("session.destroy() should delete the session cookie and data", () => {
-  const { session } = cookieSession(emptyHeaders, { secret: SECRET });
-  session.data = initialData;
+test("session.destroy() should delete the session cookie and data", async () => {
+  const { session } = await cookieSession(emptyHeaders, { secret: SECRET });
+  await session.data(initialData);
 
   const cookieString = session["set-cookie"];
 
-  session.destroy();
+  await session.destroy();
 
   const afterCookieString = session["set-cookie"];
 
@@ -134,19 +148,19 @@ test("session.destroy() should delete the session cookie and data", () => {
   }
 });
 
-test("Session should be initialized with the same data from a given session cookie header", () => {
-  const { session: newSession } = cookieSession(emptyHeaders, {
+test("Session should be initialized with the same data from a given session cookie header", async () => {
+  const { session: newSession } = await cookieSession(emptyHeaders, {
     secret: SECRET,
   });
-  newSession.data = initialData;
+  await newSession.data(initialData);
 
   const cookie = getCookieValue(newSession["set-cookie"]);
 
-  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+  const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
     secret: SECRET,
   });
 
-  const sessionData = sessionWithInitialCookie.data;
+  const sessionData = await sessionWithInitialCookie.data();
 
   assert.equal(
     {
@@ -161,26 +175,26 @@ test("Session should be initialized with the same data from a given session cook
 });
 
 test("if the session exists setting session.data should update the data but keep the expiration date", async () => {
-  const { session: oldSession } = cookieSession(emptyHeaders, {
+  const { session: oldSession } = await cookieSession(emptyHeaders, {
     secret: SECRET,
   });
 
-  oldSession.data = initialData;
+  const olsSessionData = await oldSession.data(initialData);
   const cookie = getCookieValue(oldSession["set-cookie"]);
 
   await sleep(1500);
 
-  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+  const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
     secret: SECRET,
   });
 
-  sessionWithInitialCookie.data = {
+  await sessionWithInitialCookie.data({
     ...initialData,
-    ...sessionWithInitialCookie.data,
+    ...(await sessionWithInitialCookie.data()),
     username: "mike",
-  };
+  });
 
-  const sessionData = sessionWithInitialCookie.data;
+  const sessionData = await sessionWithInitialCookie.data();
 
   assert.equal(
     {
@@ -193,7 +207,7 @@ test("if the session exists setting session.data should update the data but keep
     "Data should be set correctly"
   );
 
-  const initialExpires = new Date(oldSession.data.expires).getTime();
+  const initialExpires = new Date(olsSessionData.expires).getTime();
   const afterExpires = new Date(sessionData.expires).getTime();
 
   if (afterExpires >= initialExpires - 2000) {
@@ -223,49 +237,49 @@ test("if the session exists setting session.data should update the data but keep
   }
 });
 
-test("Session should only decrypt data with the same secret and throw an error otherwise", () => {
-  const { session: newSession } = cookieSession(emptyHeaders, {
+test("Session should only decrypt data with the same secret and throw an error otherwise", async () => {
+  const { session: newSession } = (await cookieSession(emptyHeaders, {
     secret: SECRET,
-  }) as any;
+  })) as any;
 
-  newSession.data = initialData;
+  await newSession.data(initialData);
 
   const cookie = getCookieValue(newSession["set-cookie"]);
 
-  const { session: sessionWithWrongSecret } = cookieSession(cookie, {
+  const { session: sessionWithWrongSecret } = await cookieSession(cookie, {
     secret: "zL9X16gHNCt1uRuopnJuanfznf0ziczP",
   });
 
-  sessionWithWrongSecret.data;
+  await sessionWithWrongSecret.data();
 
   const wrongCookie = getCookieValue(sessionWithWrongSecret["set-cookie"]);
   assert.equal(wrongCookie, "kit.session=0");
 });
 
-test("Session should handle password rotation", () => {
-  const { session: newSession } = cookieSession(emptyHeaders, {
+test("Session should handle password rotation", async () => {
+  const { session: newSession } = await cookieSession(emptyHeaders, {
     secret: SECRET,
   });
 
-  newSession.data = initialData;
+  await newSession.data(initialData);
 
   const initialCookie = getCookieValue(newSession["set-cookie"]);
 
-  const { session: sessionWithNewSecret } = cookieSession(initialCookie, {
+  const { session: sessionWithNewSecret } = await cookieSession(initialCookie, {
     secret: [
       { id: 2, secret: "JmLy4vMnwmQ75zhSJPc7Ud6U0anKnDZZ" },
       { id: 1, secret: SECRET },
     ],
   });
 
-  sessionWithNewSecret.data;
+  const sessionWithNewSecretData = await sessionWithNewSecret.data();
 
   assert.equal(
     {
       username: initialData.username,
     },
     {
-      username: sessionWithNewSecret.data.username,
+      username: sessionWithNewSecretData.username,
     },
     "Password rotated secrets should result in the same session data"
   );
@@ -278,7 +292,7 @@ test("Session should handle password rotation", () => {
 
   const nextCookie = getCookieValue(sessionWithNewSecret["set-cookie"]);
 
-  const { session: sessionWithNewestSecret } = cookieSession(nextCookie, {
+  const { session: sessionWithNewestSecret } = await cookieSession(nextCookie, {
     secret: [
       { id: 3, secret: "8AcoepoH61eK5ooJwHWnRNLK5ZAJDCku" },
       { id: 2, secret: "JmLy4vMnwmQ75zhSJPc7Ud6U0anKnDZZ" },
@@ -286,14 +300,14 @@ test("Session should handle password rotation", () => {
     ],
   });
 
-  sessionWithNewestSecret.data;
+  const sessionWithNewestSecretData = await sessionWithNewestSecret.data();
 
   assert.equal(
     {
       username: initialData.username,
     },
     {
-      username: sessionWithNewestSecret.data.username,
+      username: sessionWithNewestSecretData.username,
     },
     "Password rotated secrets should result in the same session data"
   );
@@ -305,18 +319,18 @@ test("Session should handle password rotation", () => {
   );
 });
 
-test("Session should be deleted if used secret id is not found", () => {
-  const { session: newSession } = cookieSession("", { secret: SECRET });
+test("Session should be deleted if used secret id is not found", async () => {
+  const { session: newSession } = await cookieSession("", { secret: SECRET });
 
-  newSession.data = initialData;
+  await newSession.data(initialData);
 
   const initialCookie = getCookieValue(newSession["set-cookie"]);
 
-  const { session: sessionWithNewSecret } = cookieSession(initialCookie, {
+  const { session: sessionWithNewSecret } = await cookieSession(initialCookie, {
     secret: [{ id: 2, secret: "LaOF8ZZVl453orCQpItURpuksdLlASAF" }],
   });
 
-  sessionWithNewSecret.data;
+  await sessionWithNewSecret.data();
 
   const deletedCookie = getCookieValue(sessionWithNewSecret["set-cookie"]);
 
@@ -325,18 +339,20 @@ test("Session should be deleted if used secret id is not found", () => {
 
 const BINARY_SECRET = new Uint8Array(32);
 
-test("Session should be initialized with a BinaryLike secret", () => {
-  const { session: newSession } = cookieSession("", { secret: BINARY_SECRET });
-
-  newSession.data = initialData;
-
-  const cookie = getCookieValue(newSession["set-cookie"]);
-
-  const { session: sessionWithInitialCookie } = cookieSession(cookie, {
+test("Session should be initialized with a BinaryLike secret", async () => {
+  const { session: newSession } = await cookieSession("", {
     secret: BINARY_SECRET,
   });
 
-  const sessionData = sessionWithInitialCookie.data;
+  await newSession.data(initialData);
+
+  const cookie = getCookieValue(newSession["set-cookie"]);
+
+  const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
+    secret: BINARY_SECRET,
+  });
+
+  const sessionData = await sessionWithInitialCookie.data();
   assert.equal(
     {
       username: sessionData.username,

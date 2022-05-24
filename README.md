@@ -18,10 +18,12 @@ The seal stored on the client contains the session data, not your server, making
 
 ---
 
-## Upgrading from v1 to v2
+## Upgrading from v2 to v3
 
-Please use any version above `@sveltejs/kit@1.0.0-next.232`, all older versions are not compatible with v2 anymore. Stick to `1.4.0` if you like to use older versions of `kit`.
-There are no major breaking changes, besides some internal refactoring and switching from JS Proxy to Getters/Setters which should end up in a better performance. We also only decrypt the session data now if you access the session.data. Also the session data returns undefined now if not existing instead of an empty object.
+Please use any version above `@sveltejs/kit@1.0.0-next.340`, all older versions are not compatible with v3 anymore. Stick to `2.1.4` if you like to use older versions of `kit`.
+There are some breaking changes around the apis, all methods are now async and reading/setting data is a function instead of a getter/setter. We're now using the WebCrypto Api instead of NodeJs Crypto, since it is polyfilled by SvelteKit and we can now support all environments instead of only Node ones.
+
+**_The session can be read and set by executing the session.data() function, if no parameter is provided the session will be returned otherwise the session will be set with the provided object_**
 
 ## Installation
 
@@ -76,7 +78,7 @@ import { handleSession } from "svelte-kit-cookie-session";
 
 /** @type {import('@sveltejs/kit').GetSession} */
 export async function getSession({ locals }) {
-  return locals.session.data;
+  return locals.session.data();
 }
 
 // You can do it like this, without passing a own handle function
@@ -154,18 +156,20 @@ Notes:
 - The secret used to encrypt session data is always the first one in the array, so when rotating to put a new secret, it must be first in the array list
 - Even if you do not provide an array at first, you can always move to array based secret afterwards, knowing that your first password (`string`) was given `{id:1}` automatically.
 
+**_The session can be read and set by executing the session.data() function, if no parameter is provided the session will be returned otherwise the session will be set with the provided object_**
+
 ### Setting The Session
 
 `If the session already exists, the data get's updated but the expiration time stays the same`
 
-`The only way to set the session is setting the locals.session.data to an object`
+`The only way to set the session is executing and awaiting the locals.session.data({}) with an object`
 
 > src/routes/login.ts
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function post({ locals, request }) {
-  locals.session.data = { loggedIn: true };
+  await locals.session.data({ loggedIn: true });
 
   return {
     body: locals.session.data,
@@ -175,17 +179,15 @@ export async function post({ locals, request }) {
 
 ### Accessing The Session
 
-`After initializing the session, your locals will be filled with a session JS Proxy, this Proxy automatically sets the cookie if you set the locals.session.data to something and receive the current data via locals.session.data only. To see this in action add a console.log(locals.session) it will be empty. Only if you add an console.log(locals.session.data) and access the data it will output the current data. So if you wonder why is my session not filled, this is why`
+`After initializing the session, your locals will be filled with a session object, we automatically set the cookie if you set the locals.session.data({}) to something and receive the current data via locals.session.data() only.`
 
 > src/routes/api/me.ts
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function get({ locals, request }) {
-  // console.log(locals.session) will be empty
-
-  // Access your data via locals.session.data -> this should always be an object.
-  const currentUser = locals.session.data?.user;
+  // Access your data via locals.session.data()
+  const currentUser = await locals.session.data()?.user;
 
   return {
     body: {
@@ -202,7 +204,7 @@ export async function get({ locals, request }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function del({ locals }) {
-  locals.session.destroy();
+  await locals.session.destroy();
 
   return {
     body: {
@@ -219,7 +221,7 @@ export async function del({ locals }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ locals, request }) {
-  locals.session.refresh(/** Optional new expiration time in days */);
+  await locals.session.refresh(/** Optional new expiration time in days */);
 
   return {
     body: locals.session.data,
@@ -254,10 +256,10 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  const sessionData = req.session.data;
+  const sessionData = await req.session.data();
   const views = sessionData.views ?? 0;
-  req.session.data = { views: views + 1 };
-  return res.json({ views: req.session.data.views });
+  const { views } = await req.session.data({ views: views + 1 });
+  return res.json({ views });
 });
 
 app.listen(4004, () => {

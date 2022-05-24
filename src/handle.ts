@@ -7,7 +7,7 @@ export function handleSession(
   passedHandle: Handle = async ({ event, resolve }) => resolve(event)
 ): Handle {
   return async function handle({ event, resolve }) {
-    const { session, cookies } = CookieSession(
+    const { session, cookies } = await CookieSession(
       event.request.headers,
       options
     ) as any as {

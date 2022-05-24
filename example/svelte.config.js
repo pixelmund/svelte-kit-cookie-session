@@ -11,9 +11,6 @@ const config = {
   kit: {
     adapter: adapter({}),
     vite: {
-      optimizeDeps: {
-        exclude: ['svelte-kit-cookie-session']
-      },
       resolve: {
         alias: {
           $cookieSession: path.resolve('../src')

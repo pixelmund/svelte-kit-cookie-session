@@ -5,13 +5,16 @@ import type { IncomingMessage, ServerResponse } from "http";
 declare global {
   namespace Express {
     interface Request {
+       // @ts-ignore
       session: import("./types").Session<Session.SessionData>;
       cookies: Record<string, string>;
     }
   }
   namespace Polka {
     interface Request {
+      // @ts-ignore
       session: import("./types").Session<Session.SessionData>;
+      cookies: Record<string, string>;
     }
   }
 }
@@ -37,8 +40,8 @@ export function sessionMiddleware<
   Res extends ServerResponse,
   SessionType = Record<string, any>
 >(options: SessionOptions): (req: Req, res: Res, next: () => void) => any {
-  return (req, res, next) => {
-    const { session, cookies } = initializeSession<SessionType>(
+  return async (req, res, next) => {
+    const { session, cookies } = await initializeSession<SessionType>(
       req.headers.cookie || "",
       options
     );

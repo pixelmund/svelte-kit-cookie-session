@@ -11,11 +11,13 @@ export interface SessionOptions {
 
 export interface Session<SessionType = Record<string, any>> {
   shouldSendToClient?: boolean;
-  data: SessionType & {
-    expires?: Date;
-  };
-  refresh: (expires_in_days?: number) => boolean;
-  destroy: () => boolean;
+  data: (data?: SessionType) => Promise<
+    SessionType & {
+      expires?: Date;
+    }
+  >;
+  refresh: (expires_in_days?: number) => Promise<boolean>;
+  destroy: () => Promise<boolean>;
 }
 
 export interface PrivateSession {
