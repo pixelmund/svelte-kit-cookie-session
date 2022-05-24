@@ -2,11 +2,6 @@ import { aesEncrypt as encrypt, aesDecrypt as decrypt } from "./webcrypto.js";
 import { parse, serialize } from "./cookie.js";
 import type { Session, SessionOptions } from "./types";
 import { daysToMaxage, maxAgeToDateOfExpiry } from "./utils.js";
-import type { BinaryLike } from "crypto";
-
-let initialSecret: BinaryLike;
-let encoder: (data: string) => Promise<string>;
-let decoder: (ciphertext: string) => Promise<string>;
 
 export default async function initializeSession<
   SessionType = Record<string, any>
@@ -23,6 +18,9 @@ export default async function initializeSession<
   const options = {
     key: userOptions.key ?? "kit.session",
     expiresInDays: userOptions.expires ?? 7,
+    security: {
+      difficulty: userOptions.security?.difficulty ?? 4,
+    },
     cookie: {
       maxAge: daysToMaxage(userOptions.expires ?? 7),
       httpOnly: userOptions?.cookie?.httpOnly ?? true,
@@ -36,22 +34,6 @@ export default async function initializeSession<
       ? userOptions.secret
       : [{ id: 1, secret: userOptions.secret }],
   };
-
-  /** This is mainly for testing purposes */
-  let changedSecrets: boolean = false;
-  if (!initialSecret || initialSecret !== options.secrets[0].secret) {
-    initialSecret = options.secrets[0].secret;
-    changedSecrets = true;
-  }
-  // Setup de/encoding
-  if (!encoder || changedSecrets) {
-    // @ts-ignore
-    encoder = encrypt(options.secrets[0].secret);
-  }
-  if (!decoder || changedSecrets) {
-    // @ts-ignore
-    decoder = decrypt(options.secrets[0].secret);
-  }
 
   const cookies = parse(
     typeof headersOrCookieString === "string"
@@ -111,15 +93,9 @@ export default async function initializeSession<
       // Set the session cookie without &id=
       sessionCookie = _sessionCookie;
 
-      // If the decodeID unequals the newest secret id in the array, re initialize the decoder.
-      if (options.secrets[0].id !== decodeID) {
-        // @ts-ignore
-        decoder = decrypt(secret.secret);
-      }
-
       // Try to decode with the given sessionCookie and secret
       try {
-        const decrypted = await decoder(_sessionCookie);
+        const decrypted = await decrypt(_sessionCookie, secret.secret, options.security.difficulty);
         if (decrypted && decrypted.length > 0) {
           sessionData = JSON.parse(decrypted);
           checkSessionExpiry();
@@ -141,7 +117,7 @@ export default async function initializeSession<
   async function makeCookie(maxAge: number, destroy: boolean = false) {
     const encode = async () => {
       const encoded =
-        (await encoder(JSON.stringify(sessionData || ""))) +
+        (await encrypt(JSON.stringify(sessionData || ""), options.secrets[0].secret)) +
         "&id=" +
         options.secrets[0].id;
       return encoded;

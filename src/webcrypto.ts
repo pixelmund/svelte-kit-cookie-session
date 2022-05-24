@@ -1,64 +1,68 @@
-export function aesEncrypt(password: string, difficulty = 10) {
-  return async (data: string) => {
-    const hashKey = await grindKey(password, difficulty);
-    const iv = await getIv(password, data);
+export async function aesEncrypt(
+  data: string,
+  password: any,
+  difficulty = 4
+) {
+  const hashKey = await grindKey(password, difficulty);
+  const iv = await getIv(password, data);
 
-    const key = await crypto.subtle.importKey(
-      "raw",
-      hashKey,
-      {
-        name: "AES-GCM",
-      },
-      false,
-      ["encrypt"]
-    );
+  const key = await crypto.subtle.importKey(
+    "raw",
+    hashKey,
+    {
+      name: "AES-GCM",
+    },
+    false,
+    ["encrypt"]
+  );
 
-    const encrypted = await crypto.subtle.encrypt(
-      {
-        name: "AES-GCM",
-        iv,
-        tagLength: 128,
-      },
-      key,
-      new TextEncoder().encode(data)
-    );
+  const encrypted = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv,
+      tagLength: 128,
+    },
+    key,
+    new TextEncoder().encode(data)
+  );
 
-    const result = Array.from(iv).concat(Array.from(new Uint8Array(encrypted)));
+  const result = Array.from(iv).concat(Array.from(new Uint8Array(encrypted)));
 
-    return base64Encode(new Uint8Array(result));
-  };
+  return base64Encode(new Uint8Array(result));
 }
 
-export function aesDecrypt(password: string, difficulty = 10) {
-  return async (ciphertext: string) => {
-    const ciphertextBuffer = Array.from(base64Decode(ciphertext));
-    const hashKey = await grindKey(password, difficulty);
+export async function aesDecrypt(
+  ciphertext: string,
+  password: any,
+  difficulty = 4
+) {
+  const ciphertextBuffer = Array.from(base64Decode(ciphertext));
+  const hashKey = await grindKey(password, difficulty);
 
-    const key = await crypto.subtle.importKey(
-      "raw",
-      hashKey,
-      {
-        name: "AES-GCM",
-      },
-      false,
-      ["decrypt"]
-    );
+  const key = await crypto.subtle.importKey(
+    "raw",
+    hashKey,
+    {
+      name: "AES-GCM",
+    },
+    false,
+    ["decrypt"]
+  );
 
-    const decrypted = await crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv: new Uint8Array(ciphertextBuffer.slice(0, 12)),
-        tagLength: 128,
-      },
-      key,
-      new Uint8Array(ciphertextBuffer.slice(12))
-    );
+  const decrypted = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: new Uint8Array(ciphertextBuffer.slice(0, 12)),
+      tagLength: 128,
+    },
+    key,
+    new Uint8Array(ciphertextBuffer.slice(12))
+  );
 
-    return new TextDecoder("utf-8").decode(new Uint8Array(decrypted));
-  };
+  return new TextDecoder("utf-8").decode(new Uint8Array(decrypted));
 }
 
-function base64Encode(u8: any) {
+function base64Encode(u8: Uint8Array) {
   return Buffer.from(u8).toString("base64");
 }
 
@@ -77,9 +81,7 @@ function grindKey(password: string, difficulty: number) {
 }
 
 function getIv(password: string, data: string) {
-  const randomData = base64Encode(
-    crypto.getRandomValues(new Uint8Array(12))
-  );
+  const randomData = base64Encode(crypto.getRandomValues(new Uint8Array(12)));
   return pbkdf2(
     password + randomData,
     data + new Date().getTime().toString(),
