@@ -1,8 +1,7 @@
-export async function aesEncrypt(
-  data: string,
-  password: any,
-  difficulty = 4
-) {
+const IS_WORKER_OR_SIMILAR =
+  typeof Buffer === "undefined" && typeof atob === "function";
+
+export async function aesEncrypt(data: string, password: any, difficulty = 4) {
   const hashKey = await grindKey(password, difficulty);
   const iv = await getIv(password, data);
 
@@ -62,11 +61,21 @@ export async function aesDecrypt(
   return new TextDecoder("utf-8").decode(new Uint8Array(decrypted));
 }
 
-function base64Encode(u8: Uint8Array) {
+function base64Encode(u8: any) {
+  if (IS_WORKER_OR_SIMILAR) {
+    return btoa(String.fromCharCode.apply(null, u8));
+  }
   return Buffer.from(u8).toString("base64");
 }
 
 function base64Decode(str: string) {
+  if (IS_WORKER_OR_SIMILAR) {
+    return new Uint8Array(
+      atob(str)
+        .split("")
+        .map((c) => c.charCodeAt(0))
+    );
+  }
   return new Uint8Array(Buffer.from(str, "base64"));
 }
 
