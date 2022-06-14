@@ -20,9 +20,6 @@ export default async function initializeSession<
   const options = {
     key: userOptions.key ?? "kit.session",
     expiresInDays: userOptions.expires ?? 7,
-    security: {
-      difficulty: userOptions.security?.difficulty ?? 2,
-    },
     cookie: {
       maxAge: daysToMaxage(userOptions.expires ?? 7),
       httpOnly: userOptions?.cookie?.httpOnly ?? true,

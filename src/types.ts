@@ -3,10 +3,6 @@ import type { BinaryLike as CBinaryLike } from "crypto";
 
 export interface SessionOptions {
   key?: string;
-  security?: {
-    difficulty?: number;
-    // TODO: Other options like algorithm, etc.
-  },
   secret: CBinaryLike | { id: number; secret: CBinaryLike }[];
   expires?: number;
   rolling?: true | number;

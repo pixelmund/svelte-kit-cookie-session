@@ -65,9 +65,10 @@ export async function aesDecrypt(ciphertext: string, password: CBinaryLike) {
   ); // ciphertext as Uint8Array
 
   try {
-    const plainBuffer = await crypto.subtle.decrypt(alg, key, ctUint8); // decrypt ciphertext using key
-    const plaintext = new TextDecoder().decode(plainBuffer); // plaintext from ArrayBuffer
-    return plaintext; // return the plaintext
+    // decrypt ciphertext using key
+    const plainBuffer = await crypto.subtle.decrypt(alg, key, ctUint8);
+    // return plaintext from ArrayBuffer
+    return new TextDecoder().decode(plainBuffer);
   } catch (e) {
     throw new Error("Decrypt failed");
   }

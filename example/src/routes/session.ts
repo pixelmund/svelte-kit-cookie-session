@@ -8,13 +8,13 @@ export const del: RequestHandler = async ({ locals }) => {
 };
 
 export const post: RequestHandler = async ({ locals }) => {
-  const sessionData = locals.sessionData;
+  const sessionData = locals.session.data;
 
   // Use the current session theme or default to light
-  let theme = sessionData?.theme ?? "light";
+  let theme = sessionData.theme ?? "light";
 
   // Toggle the theme
   theme = theme === "light" ? "dark" : "light";
 
-  return { body: { ...(await locals.session.data({ theme })) } };
+  return { body: { ...(await locals.session.set({ theme })) } };
 };

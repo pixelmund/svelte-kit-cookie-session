@@ -1,24 +1,24 @@
-lockfileVersion: 5.4
+lockfileVersion: 5.3
 
 specifiers:
   '@sveltejs/adapter-node': ^1.0.0-next.73
   '@sveltejs/kit': 1.0.0-next.341
   svelte: ^3.47.0
   svelte-check: ^2.6.0
-  svelte-kit-cookie-session: 3.0.0-next.1
+  svelte-kit-cookie-session: 3.0.0-next.4
   svelte-preprocess: ^4.10.5
   tslib: ^2.3.1
   typescript: ^4.6.3
 
 dependencies:
-  svelte-kit-cookie-session: 3.0.0-next.1
+  svelte-kit-cookie-session: 3.0.0-next.4
 
 devDependencies:
   '@sveltejs/adapter-node': 1.0.0-next.73
   '@sveltejs/kit': 1.0.0-next.341_svelte@3.47.0
   svelte: 3.47.0
   svelte-check: 2.6.0_svelte@3.47.0
-  svelte-preprocess: 4.10.5_ucc3fdkrl6lb7lhnlfimbouujy
+  svelte-preprocess: 4.10.5_svelte@3.47.0+typescript@4.6.3
   tslib: 2.3.1
   typescript: 4.6.3
 
@@ -768,7 +768,7 @@ packages:
       sade: 1.8.1
       source-map: 0.7.3
       svelte: 3.47.0
-      svelte-preprocess: 4.10.5_ucc3fdkrl6lb7lhnlfimbouujy
+      svelte-preprocess: 4.10.5_svelte@3.47.0+typescript@4.6.3
       typescript: 4.6.3
     transitivePeerDependencies:
       - '@babel/core'
@@ -792,11 +792,11 @@ packages:
       svelte: 3.47.0
     dev: true
 
-  /svelte-kit-cookie-session/3.0.0-next.1:
-    resolution: {integrity: sha512-z4n+k7qjdlOQPBvDACP/yz6Y0agojUrlXeWzLgp3SYl8YRu/Ke9FH8Rnw0BrJqBaR9QBn4glJnj9g8AbOoQ5cQ==}
+  /svelte-kit-cookie-session/3.0.0-next.4:
+    resolution: {integrity: sha512-00xQ8VGSZSEggllIS7U8WsqsHgbwtBPp6inJEsna25Fg5XkcoWv9wOxOMakj9IjOaeEfMjTMJ9U7Of4EhPtatw==}
     dev: false
 
-  /svelte-preprocess/4.10.5_ucc3fdkrl6lb7lhnlfimbouujy:
+  /svelte-preprocess/4.10.5_svelte@3.47.0+typescript@4.6.3:
     resolution: {integrity: sha512-VKXPRScCzAZqeBZOGq4LLwtNrAu++mVn7XvQox3eFDV7Ciq0Lg70Q8QWjH9iXF7J+pMlXhPsSFwpCb2E+hoeyA==}
     engines: {node: '>= 9.11.2'}
     requiresBuild: true
