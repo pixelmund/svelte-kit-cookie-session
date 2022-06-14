@@ -1,137 +1,74 @@
-const IS_WORKER_OR_SIMILAR =
-  typeof Buffer === "undefined" && typeof atob === "function";
+import type { BinaryLike as CBinaryLike } from "crypto";
 
-export async function aesEncrypt(data: string, password: any, difficulty = 4) {
-  const hashKey = await grindKey(password, difficulty);
-  const iv = await getIv(password, data);
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    hashKey,
-    {
-      name: "AES-GCM",
-    },
-    false,
-    ["encrypt"]
-  );
-
-  const encrypted = await crypto.subtle.encrypt(
-    {
-      name: "AES-GCM",
-      iv,
-      tagLength: 128,
-    },
-    key,
-    new TextEncoder().encode(data)
-  );
-
-  const result = Array.from(iv).concat(Array.from(new Uint8Array(encrypted)));
-
-  return base64Encode(new Uint8Array(result));
-}
-
-export async function aesDecrypt(
-  ciphertext: string,
-  password: any,
-  difficulty = 4
-) {
-  const ciphertextBuffer = Array.from(base64Decode(ciphertext));
-  const hashKey = await grindKey(password, difficulty);
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    hashKey,
-    {
-      name: "AES-GCM",
-    },
-    false,
-    ["decrypt"]
-  );
-
-  const decrypted = await crypto.subtle.decrypt(
-    {
-      name: "AES-GCM",
-      iv: new Uint8Array(ciphertextBuffer.slice(0, 12)),
-      tagLength: 128,
-    },
-    key,
-    new Uint8Array(ciphertextBuffer.slice(12))
-  );
-
-  return new TextDecoder("utf-8").decode(new Uint8Array(decrypted));
-}
-
-function base64Encode(u8: any) {
-  if (IS_WORKER_OR_SIMILAR) {
-    return btoa(String.fromCharCode.apply(null, u8));
+function base64Encode(input: any) {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(input).toString("base64");
   }
-  return Buffer.from(u8).toString("base64");
+
+  return btoa(input);
 }
 
-function base64Decode(str: string) {
-  if (IS_WORKER_OR_SIMILAR) {
-    return new Uint8Array(
-      atob(str)
-        .split("")
-        .map((c) => c.charCodeAt(0))
-    );
+function base64Decode(input: any) {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(input, "base64").toString("utf8");
   }
-  return new Uint8Array(Buffer.from(str, "base64"));
+
+  return atob(input);
 }
 
-function grindKey(password: string, difficulty: number) {
-  return pbkdf2(
-    password,
-    password + password,
-    Math.pow(2, difficulty),
-    32,
-    "SHA-256"
-  );
+export async function aesEncrypt(plaintext: string, password: CBinaryLike) {
+  const pwUtf8 =
+    typeof password === "string"
+      ? new TextEncoder().encode(password)
+      : password; // encode password as UTF-8
+  const pwHash = await crypto.subtle.digest("SHA-256", pwUtf8); // hash the password
+
+  const iv = crypto.getRandomValues(new Uint8Array(12)); // get 96-bit random iv
+  const ivStr = Array.from(iv)
+    .map((b) => String.fromCharCode(b))
+    .join(""); // iv as utf-8 string
+
+  const alg = { name: "AES-GCM", iv: iv }; // specify algorithm to use
+
+  const key = await crypto.subtle.importKey("raw", pwHash, alg, false, [
+    "encrypt",
+  ]); // generate key from pw
+
+  const ptUint8 = new TextEncoder().encode(plaintext); // encode plaintext as UTF-8
+  const ctBuffer = await crypto.subtle.encrypt(alg, key, ptUint8); // encrypt plaintext using key
+
+  const ctArray = Array.from(new Uint8Array(ctBuffer)); // ciphertext as byte array
+  const ctStr = ctArray.map((byte) => String.fromCharCode(byte)).join(""); // ciphertext as string
+
+  return base64Encode(ivStr + ctStr); // iv+ciphertext base64-encoded
 }
 
-function getIv(password: string, data: string) {
-  const randomData = base64Encode(crypto.getRandomValues(new Uint8Array(12)));
-  return pbkdf2(
-    password + randomData,
-    data + new Date().getTime().toString(),
-    1,
-    12,
-    "SHA-256"
-  );
-}
+export async function aesDecrypt(ciphertext: string, password: CBinaryLike) {
+  const pwUtf8 =
+    typeof password === "string"
+      ? new TextEncoder().encode(password)
+      : password; // encode password as UTF-8
+  const pwHash = await crypto.subtle.digest("SHA-256", pwUtf8); // hash the password
 
-async function pbkdf2(
-  message: string,
-  salt: string,
-  iterations: number,
-  keyLen: number,
-  algorithm: any
-) {
-  const msgBuffer = new TextEncoder().encode(message);
-  const msgUint8Array = new Uint8Array(msgBuffer);
-  const saltBuffer = new TextEncoder().encode(salt);
-  const saltUint8Array = new Uint8Array(saltBuffer);
+  const ivStr = base64Decode(ciphertext).slice(0, 12); // decode base64 iv
+  const iv = new Uint8Array(Array.from(ivStr).map((ch) => ch.charCodeAt(0))); // iv as Uint8Array
 
-  const key = await crypto.subtle.importKey(
-    "raw",
-    msgUint8Array,
-    {
-      name: "PBKDF2",
-    },
-    false,
-    ["deriveBits"]
-  );
+  const alg = { name: "AES-GCM", iv: iv }; // specify algorithm to use
 
-  const buffer = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt: saltUint8Array,
-      iterations: iterations,
-      hash: algorithm,
-    },
-    key,
-    keyLen * 8
-  );
+  const key = await crypto.subtle.importKey("raw", pwHash, alg, false, [
+    "decrypt",
+  ]); // generate key from pw
 
-  return new Uint8Array(buffer);
+  const ctStr = base64Decode(ciphertext).slice(12); // decode base64 ciphertext
+  const ctUint8 = new Uint8Array(
+    Array.from(ctStr).map((ch) => ch.charCodeAt(0))
+  ); // ciphertext as Uint8Array
+
+  try {
+    const plainBuffer = await crypto.subtle.decrypt(alg, key, ctUint8); // decrypt ciphertext using key
+    const plaintext = new TextDecoder().decode(plainBuffer); // plaintext from ArrayBuffer
+    return plaintext; // return the plaintext
+  } catch (e) {
+    throw new Error("Decrypt failed");
+  }
 }

@@ -23,7 +23,7 @@ test("initialize and set session benchmark", async () => {
     const { session } = await cookieSession(emptyHeaders, {
       secret: SECRET,
     }) as any;
-    session.data(initialData);
+    await session.set(initialData);
   }
 
   console.timeEnd("init-set-session");
@@ -34,7 +34,7 @@ test("initialize and and dont get session data benchmark", async () => {
     secret: SECRET,
   }) as any;
 
-  await newSession.data(initialData);
+  await newSession.set(initialData);
   const cookie = getCookieValue(newSession["set-cookie"]);
 
   console.time("init-session");
@@ -50,7 +50,7 @@ test("initialize and get session data benchmark", async () => {
     secret: SECRET,
   }) as any;
 
-  await newSession.data(initialData);
+  await newSession.set(initialData);
   const cookie = getCookieValue(newSession["set-cookie"]);
 
   console.time("decode-session");
@@ -59,7 +59,7 @@ test("initialize and get session data benchmark", async () => {
     const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
       secret: SECRET,
     });
-    await sessionWithInitialCookie.data();
+    const sessionData = sessionWithInitialCookie.data;
   }
   console.timeEnd("decode-session");
 });

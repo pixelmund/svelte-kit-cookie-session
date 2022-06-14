@@ -15,11 +15,10 @@ export interface SessionOptions {
 
 export interface Session<SessionType = Record<string, any>> {
   shouldSendToClient?: boolean;
-  data: (data?: SessionType) => Promise<
-    SessionType & {
-      expires?: Date;
-    }
-  >;
+  data: SessionType & {
+    expires?: Date;
+  }
+  set: (data?: SessionType) => Promise<SessionType>;
   refresh: (expires_in_days?: number) => Promise<boolean>;
   destroy: () => Promise<boolean>;
 }
