@@ -1,102 +1,71 @@
 import { encrypt, decrypt } from 'zencrypt';
 import { parse, serialize } from './cookie.js';
 import type { Session, SessionOptions } from './types';
-import { daysToMaxage, maxAgeToDateOfExpiry } from './utils.js';
+import { daysToMaxage, maxAgeToDateOfExpiry, normalizeConfig } from './utils.js';
 
 export default async function initializeSession<SessionType = Record<string, any>>(
 	headersOrCookieString: Headers | string,
 	userOptions: SessionOptions
 ) {
-	if (userOptions.secret == null) {
-		throw new Error('Please provide at least one secret');
-	}
-
-	const isSecureCookie =
-		typeof process !== 'undefined' ? process.env.NODE_ENV !== 'development' : false;
-
-	let setCookie: string | undefined;
-
-	const options = {
-		key: userOptions.key ?? 'kit.session',
-		expiresInDays: userOptions.expires ?? 7,
-		cookie: {
-			maxAge: daysToMaxage(userOptions.expires ?? 7),
-			httpOnly: userOptions?.cookie?.httpOnly ?? true,
-			sameSite: userOptions?.cookie?.sameSite ?? 'lax',
-			path: userOptions?.cookie?.path ?? '/',
-			domain: userOptions?.cookie?.domain ?? undefined,
-			secure: userOptions?.cookie?.secure ?? isSecureCookie
-		},
-		rolling: userOptions?.rolling ?? false,
-		secrets: Array.isArray(userOptions.secret)
-			? userOptions.secret
-			: [{ id: 1, secret: userOptions.secret }]
-	};
-
-	const cookies = parse(
-		typeof headersOrCookieString === 'string'
-			? headersOrCookieString
-			: headersOrCookieString.get('cookie') || '',
-		{}
-	);
-
-	let sessionCookie: string = cookies[options.key] || '';
-
 	const sessionState = {
 		invalidDate: false,
 		shouldReEncrypt: false,
 		shouldDestroy: false,
 		shouldSendToClient: false
 	};
+	const options = normalizeConfig(userOptions);
+
+	let setCookie: string | undefined;
+	const cookies = parse(
+		typeof headersOrCookieString === 'string'
+			? headersOrCookieString
+			: headersOrCookieString.get('cookie') || '',
+		{}
+	);
+	let sessionCookie: string = cookies[options.key] || '';
 
 	type SessionDataWithExpires = SessionType & { expires?: Date };
-
 	let sessionData: SessionDataWithExpires | undefined;
-
-	function checkSessionExpiry() {
-		if (
-			sessionData &&
-			sessionData.expires &&
-			new Date(sessionData.expires).getTime() < new Date().getTime()
-		) {
-			sessionState.invalidDate = true;
-		}
-	}
 
 	async function getSessionData() {
 		const [_sessionCookie, secret_id] = sessionCookie.split('&id=');
 
+		if (_sessionCookie.length === 0) return;
+
 		// If we have a session cookie we try to get the id from the cookie value and use it to decode the cookie.
 		// If the decodeID is not the first secret in the secrets array we should re encrypt to the newest secret.
-		if (_sessionCookie.length > 0) {
-			// Split the sessionCookie on the &id= field to get the id we used to encrypt the session.
-			const decodeID = secret_id ? Number(secret_id) : 1;
 
-			// Use the id from the cookie or the initial one which is always 1.
-			let secret = options.secrets.find((sec) => sec.id === decodeID);
+		// Split the sessionCookie on the &id= field to get the id we used to encrypt the session.
+		const decodeID = secret_id ? Number(secret_id) : 1;
 
-			// If there is no secret found try the first in the secrets array.
-			if (!secret) secret = options.secrets[0];
+		// Use the id from the cookie or the initial one which is always 1.
+		let secret = options.secrets.find((sec) => sec.id === decodeID);
 
-			// Set the session cookie without &id=
-			sessionCookie = _sessionCookie;
+		// If there is no secret found try the first in the secrets array.
+		if (!secret) secret = options.secrets[0];
 
-			// Try to decode with the given sessionCookie and secret
-			try {
-				const decrypted = await decrypt(_sessionCookie, secret.secret);
-				sessionData = decrypted;
+		// Set the session cookie without &id=
+		sessionCookie = _sessionCookie;
 
-				checkSessionExpiry();
+		// Try to decode with the given sessionCookie and secret
+		try {
+			const decrypted = await decrypt(_sessionCookie, secret.secret);
+			sessionData = decrypted;
 
-				// If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
-				if (options.secrets[0].id !== decodeID) {
-					await reEncryptSession();
-				}
-
-				return sessionData;
-			} catch (error) {
-				await destroySession();
+			if (
+				sessionData &&
+				sessionData.expires &&
+				new Date(sessionData.expires).getTime() < new Date().getTime()
+			) {
+				sessionState.invalidDate = true;
 			}
+
+			// If the decodeID unequals the newest secret id in the array, we should re-encrypt the session with the newest secret.
+			if (options.secrets[0].id !== decodeID) {
+				await reEncryptSession();
+			}
+		} catch (error) {
+			await destroySession();
 		}
 	}
 
@@ -124,7 +93,9 @@ export default async function initializeSession<SessionType = Record<string, any
 		get 'set-cookie'(): string | undefined {
 			return setCookie;
 		},
-		update: async function (updateFn: (data?: SessionType) => SessionType | Promise<SessionType>) {
+		update: async function (
+			updateFn: (data?: SessionType) => Partial<SessionType> | Promise<Partial<SessionType>>
+		) {
 			const _sd = await updateFn(sessionData);
 
 			let maxAge = options.cookie.maxAge;
@@ -133,7 +104,9 @@ export default async function initializeSession<SessionType = Record<string, any
 				maxAge = new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
 			}
 
+			// @ts-ignore This is fine:
 			sessionData = {
+				...sessionData,
 				..._sd,
 				expires: maxAgeToDateOfExpiry(maxAge)
 			};
@@ -194,13 +167,10 @@ export default async function initializeSession<SessionType = Record<string, any
 
 	// If rolling is activated and the session exists we refresh the session on every request.
 	if (options?.rolling) {
-		// Fake access session data:
-		const _sd = sessionData;
-
-		if (typeof options.rolling === 'number' && _sd?.expires) {
+		if (typeof options.rolling === 'number' && sessionData?.expires) {
 			// refreshes when a percentage of the expiration date is met
 			const differenceInSeconds = Math.round(
-				new Date(_sd.expires).getTime() / 1000 - new Date().getTime() / 1000
+				new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000
 			);
 
 			if (differenceInSeconds < (options.rolling / 100) * options.cookie.maxAge) {
@@ -218,17 +188,14 @@ export default async function initializeSession<SessionType = Record<string, any
 	}
 
 	async function reEncryptSession() {
-		if (sessionData) {
-			let maxAge = options.cookie.maxAge;
+		let maxAge = options.cookie.maxAge;
 
-			if (sessionData?.expires) {
-				maxAge = new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
-			}
-
-			sessionData = { ...sessionData };
-			sessionState.shouldSendToClient = true;
-			setCookie = await makeCookie(maxAge);
+		if (sessionData?.expires) {
+			maxAge = new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
 		}
+
+		sessionState.shouldSendToClient = true;
+		setCookie = await makeCookie(maxAge);
 	}
 
 	return {

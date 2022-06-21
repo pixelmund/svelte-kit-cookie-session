@@ -58,7 +58,10 @@ test('[FEAT]: Updating the session, keeps the expiry', async ({ page, request, c
 
 	expect(updatedMaxage).toBeLessThan(initialMaxage);
 
-	expect(updatedData.data.expires).toStrictEqual(initialData.data.expires);
+	const updatedExpires = updatedData.data.expires.split('.')[0]
+	const initialExpires = initialData.data.expires.split('.')[0]
+
+	expect(updatedExpires).toStrictEqual(initialExpires);
 	expect(updatedData.data.views).toBeGreaterThan(initialData.data.views);
 });
 
@@ -111,6 +114,19 @@ test('[INTEGRATION]: Binary Secrets', async ({ page, request, context }) => {
 	expect(data.ok, data.reason).toBe(true);
 });
 
+test('[INTEGRATION]: Handles special characters', async ({ page, request, context }) => {
+	await context.clearCookies();
+
+	await page.goto('/tests/handles-special-chars');
+	expect(await page.textContent('#name')).toBe('Jürgen 🤩');
+	expect(await page.textContent('#session_name')).toBe('undefined');
+
+	await page.reload();
+
+	expect(await page.textContent('#name')).toBe('Jürgen 🤩');
+	expect(await page.textContent('#session_name')).toBe('Jürgen 🤩');
+});
+
 test('[INTEGRATION]: Wrong secret deletes the session', async ({ page, request, context }) => {
 	await context.clearCookies();
 
@@ -126,7 +142,7 @@ test('[INTEGRATION]: Wrong secret deletes the session', async ({ page, request, 
 test('[BENCHMARK]: Set a new session', async ({ request }) => {
 	const response = await request.post('/tests/benchmark/set-session', {
 		data: {
-			runs: 1000
+			runs: 5000
 		}
 	});
 
@@ -140,7 +156,7 @@ test('[BENCHMARK]: Set a new session', async ({ request }) => {
 test('[BENCHMARK]: Get an already existing session', async ({ request }) => {
 	const response = await request.post('/tests/benchmark/get-session', {
 		data: {
-			runs: 1000
+			runs: 5000
 		}
 	});
 
@@ -154,7 +170,7 @@ test('[BENCHMARK]: Get an already existing session', async ({ request }) => {
 test('[BENCHMARK]: Get & Set', async ({ request }) => {
 	const response = await request.post('/tests/benchmark', {
 		data: {
-			runs: 1000
+			runs: 5000
 		}
 	});
 

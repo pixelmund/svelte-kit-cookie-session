@@ -5,7 +5,7 @@ export const get: RequestHandler = async ({ locals }) => {
 
 	return {
 		body: {
-			data: locals.session.data
+			data: locals.session.data as {}
 		}
 	};
 };
