@@ -111,6 +111,19 @@ test('[INTEGRATION]: Binary Secrets', async ({ page, request, context }) => {
 	expect(data.ok, data.reason).toBe(true);
 });
 
+test('[INTEGRATION]: Handles special characters', async ({ page, request, context }) => {
+	await context.clearCookies();
+
+	await page.goto('/tests/handles-special-chars');
+	expect(await page.textContent('#name')).toBe('Jürgen 🤩');
+	expect(await page.textContent('#session_name')).toBe('undefined');
+
+	await page.reload();
+
+	expect(await page.textContent('#name')).toBe('Jürgen 🤩');
+	expect(await page.textContent('#session_name')).toBe('Jürgen 🤩');
+});
+
 test('[INTEGRATION]: Wrong secret deletes the session', async ({ page, request, context }) => {
 	await context.clearCookies();
 

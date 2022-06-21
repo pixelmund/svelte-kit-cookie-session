@@ -124,7 +124,7 @@ export default async function initializeSession<SessionType = Record<string, any
 		get 'set-cookie'(): string | undefined {
 			return setCookie;
 		},
-		update: async function (updateFn: (data?: SessionType) => SessionType | Promise<SessionType>) {
+		update: async function (updateFn: (data?: SessionType) => Partial<SessionType> | Promise<Partial<SessionType>>) {
 			const _sd = await updateFn(sessionData);
 
 			let maxAge = options.cookie.maxAge;
@@ -133,7 +133,9 @@ export default async function initializeSession<SessionType = Record<string, any
 				maxAge = new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
 			}
 
+			// @ts-ignore This is fine:
 			sessionData = {
+				...sessionData,
 				..._sd,
 				expires: maxAgeToDateOfExpiry(maxAge)
 			};

@@ -14,7 +14,7 @@ export interface Session<SessionType = Record<string, any>> {
   data: SessionType & {
     expires?: Date;
   }
-  update: (updateFn: (data?: SessionType) => SessionType | Promise<SessionType>) => Promise<SessionType>;
+  update: (updateFn: (data?: SessionType) => Partial<SessionType> | Promise<Partial<SessionType>>) => Promise<SessionType>;
   set: (data?: SessionType) => Promise<SessionType>;
   refresh: (expires_in_days?: number) => Promise<boolean>;
   destroy: () => Promise<boolean>;
