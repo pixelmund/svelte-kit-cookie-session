@@ -4,10 +4,6 @@
 
 ---
 
-Check out, [Svemix](https://github.com/svemix/svemix) if you want to have a better developer experience using **SvelteKit**. Svemix can be seen as an full stack addition to **Kit**. It let's you write server side code inside .svelte files, has session handling on the next level with auto client session updates, loaders and actions that run on the server and even working with javascript disabled, also provides you with meta/SEO handling.
-
----
-
 **This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via a encrypted seal. This provides strong client/"stateless" sessions.
 
 The seal stored on the client contains the session data, not your server, making it a "stateless" session from the server point of view. This is a different take than `express-session` where the cookie contains a session ID to then be used to map data on the server-side.
@@ -18,10 +14,10 @@ The seal stored on the client contains the session data, not your server, making
 
 ---
 
-## Upgrading from v1 to v2
+## Upgrading from v2 to v3
 
-Please use any version above `@sveltejs/kit@1.0.0-next.232`, all older versions are not compatible with v2 anymore. Stick to `1.4.0` if you like to use older versions of `kit`.
-There are no major breaking changes, besides some internal refactoring and switching from JS Proxy to Getters/Setters which should end up in a better performance. We also only decrypt the session data now if you access the session.data. Also the session data returns undefined now if not existing instead of an empty object.
+Please use any version above `@sveltejs/kit@1.0.0-next.340`, all older versions are not compatible with v3 anymore. Stick to `2.1.4` if you like to use older versions of `kit`.
+There are some breaking changes around the apis, all methods are now async and setting the data is done via the `set` or `update` methods. We're now using the WebCrypto Api instead of NodeJs Crypto, since it is polyfilled by SvelteKit and we can now support all environments instead of only Node ones.
 
 ## Installation
 
@@ -39,29 +35,29 @@ Update your `app.d.ts` file to look something like:
 /// <reference types="@sveltejs/kit" />
 
 interface SessionData {
-  // Your session data
-  views: number;
+	// Your session data
+	views: number;
 }
 
 // See https://kit.svelte.dev/docs#typescript
 // for information about these interfaces
 declare namespace App {
-  interface Locals {
-    session: import("svelte-kit-cookie-session").Session<SessionData>;
-    cookies: Record<string, string>; // all parsed cookies are automatically set from handleSession to avoid overhead
-  }
+	interface Locals {
+		session: import('svelte-kit-cookie-session').Session<SessionData>;
+		cookies: Record<string, string>; // all parsed cookies are automatically set from handleSession to avoid overhead
+	}
 
-  interface Platform {}
+	interface Platform {}
 
-  interface Session extends SessionData {}
+	interface Session extends SessionData {}
 
-  interface Stuff {}
+	interface Stuff {}
 }
 ```
 
 ## Usage
 
-You can find an example implementation here [Example](/example).
+You can find some examples in the src/routes/tests folder [Tests](/src/routes/tests).
 
 The secret is a private key or list of private keys you must pass at runtime, it should be at least `32 characters` long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
 
@@ -72,31 +68,31 @@ The secret is a private key or list of private keys you must pass at runtime, it
 > src/hooks.ts || src/hooks/index.ts
 
 ```js
-import { handleSession } from "svelte-kit-cookie-session";
+import { handleSession } from 'svelte-kit-cookie-session';
 
 /** @type {import('@sveltejs/kit').GetSession} */
 export async function getSession({ locals }) {
-  return locals.session.data;
+	return locals.session.data;
 }
 
 // You can do it like this, without passing a own handle function
 export const handle = handleSession({
-  secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
+	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
 });
 
 // Or pass your handle function as second argument to handleSession
 
 export const handle = handleSession(
-  {
-    secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
-  },
-  ({ event, resolve }) => {
-    // event.locals is populated with the session `event.locals.session`
-    // event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
+	{
+		secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+	},
+	({ event, resolve }) => {
+		// event.locals is populated with the session `event.locals.session`
+		// event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
 
-    // Do anything you want here
-    return resolve(event);
-  }
+		// Do anything you want here
+		return resolve(event);
+	}
 );
 ```
 
@@ -104,13 +100,13 @@ In case you're using [sequence()](https://kit.svelte.dev/docs/modules#sveltejs-k
 
 ```js
 const sessionHandler = handleSession({
-  secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
+	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
 });
 export const handle = sequence(sessionHandler, ({ resolve, event }) => {
-  // event.locals is populated with the session `event.locals.session`
-  // event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
-  // Do anything you want here
-  return resolve(event);
+	// event.locals is populated with the session `event.locals.session`
+	// event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
+	// Do anything you want here
+	return resolve(event);
 });
 ```
 
@@ -127,7 +123,7 @@ Then you can use multiple secrets:
 
 ```js
 export const handle = handleSession({
-  secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
+	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
 });
 ```
 
@@ -135,16 +131,16 @@ export const handle = handleSession({
 
 ```js
 export const handle = handleSession({
-  secret: [
-    {
-      id: 2,
-      secret: "SOME_OTHER_COMPLEX_SECRET_AT_LEAST_32_CHARS",
-    },
-    {
-      id: 1,
-      secret: "SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS",
-    },
-  ],
+	secret: [
+		{
+			id: 2,
+			secret: 'SOME_OTHER_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+		},
+		{
+			id: 1,
+			secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+		}
+	]
 });
 ```
 
@@ -156,42 +152,57 @@ Notes:
 
 ### Setting The Session
 
+Setting the session can be done in two ways, either via the `set` method or via the `update` method.
+
 `If the session already exists, the data get's updated but the expiration time stays the same`
 
-`The only way to set the session is setting the locals.session.data to an object`
-
-> src/routes/login.ts
+> src/routes/counter.ts
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function post({ locals, request }) {
-  locals.session.data = { loggedIn: true };
+	const { counter = 0 } = locals.session.data;
 
-  return {
-    body: locals.session.data,
-  };
+	await locals.session.set({ counter: counter + 1 });
+
+	return {
+		body: locals.session.data
+	};
+}
+```
+
+`Sometimes you don't want to get the session data first only to increment a counter or some other value, that's where the update method comes in to play`
+
+> src/routes/counter.ts
+
+```js
+/** @type {import('@sveltejs/kit').RequestHandler} */
+export async function post({ locals, request }) {
+	await locals.session.update(({ count }) => ({ count: count ? count + 1 : 0 }));
+
+	return {
+		body: locals.session.data
+	};
 }
 ```
 
 ### Accessing The Session
 
-`After initializing the session, your locals will be filled with a session JS Proxy, this Proxy automatically sets the cookie if you set the locals.session.data to something and receive the current data via locals.session.data only. To see this in action add a console.log(locals.session) it will be empty. Only if you add an console.log(locals.session.data) and access the data it will output the current data. So if you wonder why is my session not filled, this is why`
+`After initializing the session, your locals will be filled with a session object, we automatically set the cookie if you set the session via locals.session.set({}) to something and receive the current data via locals.session.data only.`
 
 > src/routes/api/me.ts
 
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function get({ locals, request }) {
-  // console.log(locals.session) will be empty
+	// Access your data via locals.session.data
+	const currentUser = locals.session.data.user;
 
-  // Access your data via locals.session.data -> this should always be an object.
-  const currentUser = locals.session.data?.user;
-
-  return {
-    body: {
-      me: currentUser,
-    },
-  };
+	return {
+		body: {
+			me: currentUser
+		}
+	};
 }
 ```
 
@@ -202,13 +213,13 @@ export async function get({ locals, request }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function del({ locals }) {
-  locals.session.destroy();
+	await locals.session.destroy();
 
-  return {
-    body: {
-      ok: true,
-    },
-  };
+	return {
+		body: {
+			ok: true
+		}
+	};
 }
 ```
 
@@ -219,11 +230,11 @@ export async function del({ locals }) {
 ```js
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function put({ locals, request }) {
-  locals.session.refresh(/** Optional new expiration time in days */);
+	await locals.session.refresh(/** Optional new expiration time in days */);
 
-  return {
-    body: locals.session.data,
-  };
+	return {
+		body: locals.session.data
+	};
 }
 ```
 
@@ -235,7 +246,7 @@ You can also specify a percentage from 1 to 100 which refreshes the session when
 
 ```js
 handleSession({
-  rolling: true, // or 1-100 for percentage o the expiry date met,
+	rolling: true // or 1-100 for percentage o the expiry date met,
 });
 ```
 
@@ -243,24 +254,24 @@ handleSession({
 
 This library can integrate with express, polka or any other connect compatible middleware layer.
 
+**Please make sure to polyfill the webcrypto module on globalThis if you're doing so!**
+
 ```ts
-import express from "express";
-import { sessionMiddleware } from "svelte-kit-cookie-session";
+import express from 'express';
+import { sessionMiddleware } from 'svelte-kit-cookie-session';
 
 const app = express();
 
-app.use(
-  sessionMiddleware({ secret: "A_VERY_SECRET_SECRET_AT_LEAST_32_CHARS_LONG" })
-);
+app.use(sessionMiddleware({ secret: 'A_VERY_SECRET_SECRET_AT_LEAST_32_CHARS_LONG' }));
 
-app.get("/", (req, res) => {
-  const sessionData = req.session.data;
-  const views = sessionData.views ?? 0;
-  req.session.data = { views: views + 1 };
-  return res.json({ views: req.session.data.views });
+app.get('/', (req, res) => {
+	const sessionData = req.session.data;
+	const views = sessionData.views ?? 0;
+	const { views } = await req.session.set({ views: views + 1 });
+	return res.json({ views });
 });
 
 app.listen(4004, () => {
-  console.log("Listening on http://localhost:4004");
+	console.log('Listening on http://localhost:4004');
 });
 ```
