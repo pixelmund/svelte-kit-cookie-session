@@ -58,7 +58,10 @@ test('[FEAT]: Updating the session, keeps the expiry', async ({ page, request, c
 
 	expect(updatedMaxage).toBeLessThan(initialMaxage);
 
-	expect(updatedData.data.expires).toStrictEqual(initialData.data.expires);
+	const updatedExpires = updatedData.data.expires.split('.')[0]
+	const initialExpires = initialData.data.expires.split('.')[0]
+
+	expect(updatedExpires).toStrictEqual(initialExpires);
 	expect(updatedData.data.views).toBeGreaterThan(initialData.data.views);
 });
 
@@ -139,7 +142,7 @@ test('[INTEGRATION]: Wrong secret deletes the session', async ({ page, request, 
 test('[BENCHMARK]: Set a new session', async ({ request }) => {
 	const response = await request.post('/tests/benchmark/set-session', {
 		data: {
-			runs: 1000
+			runs: 5000
 		}
 	});
 
@@ -153,7 +156,7 @@ test('[BENCHMARK]: Set a new session', async ({ request }) => {
 test('[BENCHMARK]: Get an already existing session', async ({ request }) => {
 	const response = await request.post('/tests/benchmark/get-session', {
 		data: {
-			runs: 1000
+			runs: 5000
 		}
 	});
 
@@ -167,7 +170,7 @@ test('[BENCHMARK]: Get an already existing session', async ({ request }) => {
 test('[BENCHMARK]: Get & Set', async ({ request }) => {
 	const response = await request.post('/tests/benchmark', {
 		data: {
-			runs: 1000
+			runs: 5000
 		}
 	});
 
