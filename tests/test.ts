@@ -58,8 +58,8 @@ test('[FEAT]: Updating the session, keeps the expiry', async ({ page, request, c
 
 	expect(updatedMaxage).toBeLessThan(initialMaxage);
 
-	const updatedExpires = updatedData.data.expires.split('.')[0]
-	const initialExpires = initialData.data.expires.split('.')[0]
+	const updatedExpires = updatedData.data.expires.split('.')[0];
+	const initialExpires = initialData.data.expires.split('.')[0];
 
 	expect(updatedExpires).toStrictEqual(initialExpires);
 	expect(updatedData.data.views).toBeGreaterThan(initialData.data.views);
@@ -94,6 +94,38 @@ test('[FEAT]: Password rotation', async ({ page, request, context }) => {
 	await context.clearCookies();
 
 	const response = await request.get('/tests/password-rotation');
+
+	await expect(response).toBeOK();
+
+	const data = await response.json();
+
+	expect(data.ok).toBe(true);
+});
+
+test('[FEAT]: Rolling = true should refresh the session every request', async ({
+	page,
+	request,
+	context
+}) => {
+	await context.clearCookies();
+
+	const response = await request.get('/tests/rolling');
+
+	await expect(response).toBeOK();
+
+	const data = await response.json();
+
+	expect(data.ok).toBe(true);
+});
+
+test('[FEAT]: Rolling = number (percentage) should refresh the session if a certain percentage of the expiry is met', async ({
+	page,
+	request,
+	context
+}) => {
+	await context.clearCookies();
+
+	const response = await request.get('/tests/rolling/percentage');
 
 	await expect(response).toBeOK();
 
