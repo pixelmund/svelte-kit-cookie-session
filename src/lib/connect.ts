@@ -1,4 +1,4 @@
-import initializeSession from "./core.js";
+import { cookieSession } from "./core.js";
 import type { SessionOptions } from "./types";
 import type { IncomingMessage, ServerResponse } from "http";
 
@@ -41,7 +41,7 @@ export function sessionMiddleware<
   SessionType = Record<string, any>
 >(options: SessionOptions): (req: Req, res: Res, next: () => void) => any {
   return async (req, res, next) => {
-    const { session, cookies } = await initializeSession<SessionType>(
+    const { session, cookies } = await cookieSession<SessionType>(
       req.headers.cookie || "",
       options
     );

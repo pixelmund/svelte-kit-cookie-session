@@ -1,4 +1,4 @@
-import type { SessionOptions } from './types';
+import type { BinaryLike, SessionOptions } from './types';
 
 export function daysToMaxage(days: number) {
 	var today = new Date();
@@ -12,7 +12,27 @@ export function maxAgeToDateOfExpiry(maxAge: number) {
 	return new Date(Date.now() + maxAge * 1000);
 }
 
-export function normalizeConfig(options: SessionOptions) {
+export interface Secret {
+	id: number;
+	secret: BinaryLike;
+}
+
+export interface NormalizedConfig {
+	key: string;
+	expiresInDays: number;
+	cookie: {
+		maxAge: number;
+		httpOnly: boolean;
+		sameSite: any;
+		path: string;
+		domain: string | undefined;
+		secure: boolean;
+	};
+	rolling: number | boolean | undefined;
+	secrets: Array<Secret>;
+}
+
+export function normalizeConfig(options: SessionOptions) : NormalizedConfig {
 	if (options.secret == null) {
 		throw new Error('Please provide at least one secret');
 	}
