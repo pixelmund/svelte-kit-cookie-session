@@ -34,7 +34,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"zencrypt": "^0.0.5"
+		"zencrypt": "^0.0.6"
 	},
 	"keywords": [
 		"SvelteKit",
