@@ -1,6 +1,6 @@
 {
 	"name": "svelte-kit-cookie-session",
-	"version": "3.0.4",
+	"version": "3.0.5",
 	"description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
 	"repository": {
 		"type": "git",
@@ -34,7 +34,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"zencrypt": "^0.0.5"
+		"zencrypt": "^0.0.6"
 	},
 	"keywords": [
 		"SvelteKit",
