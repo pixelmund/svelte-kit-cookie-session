@@ -3,12 +3,11 @@
 	import { onMount } from 'svelte';
 
 	async function updateSession() {
-		await fetch('/tests/invalidate-session', {
+		await fetch('/tests/sync-session', {
 			method: 'POST',
 			headers: { Accept: 'application/json' }
 		});
-
-		await (session as any).invalidate();
+		await (session as any).sync();
 	}
 
 	onMount(async () => {

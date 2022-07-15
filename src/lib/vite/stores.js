@@ -67,7 +67,7 @@ const throw_error = (verb) => {
 
 /** @type {typeof import('$app/stores').session} */
 const session = {
-	invalidate: async () => {
+	sync: async () => {
 		const response = await fetch('/__session.json');
 		const sessionData = await response.json();
 		session.set(sessionData);
