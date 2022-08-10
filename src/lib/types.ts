@@ -12,7 +12,6 @@ export interface SessionOptions {
 }
 
 export interface Session<SessionType = Record<string, any>> {
-  shouldSendToClient?: boolean;
   data: SessionType & {
     expires?: Date;
   }
