@@ -3,11 +3,16 @@
 	import { onMount } from 'svelte';
 
 	async function updateSession() {
-		await fetch('/tests/sync-session', {
+		const response = await fetch('/tests/sync-session', {
 			method: 'POST',
 			headers: { Accept: 'application/json' }
 		});
-		await (session as any).sync();
+		if (response.headers.has('x-svelte-kit-cookie-session-needs-sync')) {
+			const sessionData = await fetch('/__session.json').then((r) => (r.ok ? r.json() : null));
+			if (sessionData) {
+				session.set(sessionData);
+			}
+		}
 	}
 
 	onMount(async () => {

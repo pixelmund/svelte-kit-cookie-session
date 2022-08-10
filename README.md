@@ -10,6 +10,19 @@ The seal stored on the client contains the session data, not your server, making
 
 ---
 
+## 📚&nbsp;&nbsp;Table of Contents
+
+1. [Upgrading](#upgrading-from-v2-to-v3)
+1. [Installation](#installation)
+1. [Usage](#usage)
+1. [Initializing](#initializing)
+1. [Secret Rotation](#secret-rotation)
+1. [Setting the Session](#setting-the-session)
+1. [Accessing the Session](#accessing-the-session)
+1. [Destroying the Session](#destroying-the-session)
+1. [Refreshing the Session](#refresh-the-session-with-the-same-data-but-renew-the-expiration-date)
+1. [Sync sessions between browser and server](#sync-session-between-browser-and-server)
+
 **By default the cookie has an ⏰ expiration time of 7 days**, set via [`expires`] which should be a `number` in `days`.
 
 ---
@@ -110,7 +123,9 @@ export const handle = sequence(sessionHandler, ({ resolve, event }) => {
 });
 ```
 
-### ♻️ Secret rotation is supported. It allows you to change the secret used to sign and encrypt sessions while still being able to decrypt sessions that were created with a previous secret.
+### Secret rotation 
+
+is supported. It allows you to change the secret used to sign and encrypt sessions while still being able to decrypt sessions that were created with a previous secret.
 
 This is useful if you want to:
 
@@ -223,7 +238,7 @@ export async function del({ locals }) {
 }
 ```
 
-### Refresh the session with the same data but renew the expiration date.
+### Refresh the session with the same data but renew the expiration date
 
 > src/routes/refresh.ts
 
@@ -248,6 +263,34 @@ You can also specify a percentage from 1 to 100 which refreshes the session when
 handleSession({
 	rolling: true // or 1-100 for percentage o the expiry date met,
 });
+```
+
+### Sync session between browser and server
+
+The `handleSession` function keeps track if the client needs to be synced with the server!
+If the header `x-svelte-kit-cookie-session-needs-sync` is set, you know that you have to sync the state.
+You can do so by fetching the magic `/__session.json` endpoints, provided by handleSession.
+
+***The enhance function can be extended like so:***
+```ts
+/// lib/form.ts
+export function enhance(){
+	...
+	async function handle_submit(e) {
+		...
+		if (response.ok) {
+			if (response.headers.has('x-svelte-kit-cookie-session-needs-sync')) {
+					const sessionData = await fetch('/__session.json').then((r) => (r.ok ? r.json() : null));
+					if (sessionData) {
+						session.set(sessionData);
+					}
+			}
+			...
+		}
+		...
+	}
+}
+
 ```
 
 ### Express/Connect Integration

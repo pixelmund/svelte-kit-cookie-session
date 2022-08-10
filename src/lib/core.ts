@@ -14,6 +14,7 @@ export async function cookieSession<SessionType = Record<string, any>>(
 ) {
 	const config = normalizeConfig(userConfig);
 
+	let needsSync = false;
 	let setCookieString: string | undefined;
 	const cookieString =
 		typeof headersOrCookieString === 'string'
@@ -33,6 +34,8 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			maxAge = new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
 		}
 
+		needsSync = true;
+
 		sessionData = {
 			...sd,
 			expires: maxAgeToDateOfExpiry(maxAge)
@@ -46,6 +49,8 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			return false;
 		}
 
+		needsSync = true;
+
 		const newMaxAge = daysToMaxage(expiresInDays ? expiresInDays : config.expiresInDays);
 
 		sessionData = {
@@ -57,6 +62,7 @@ export async function cookieSession<SessionType = Record<string, any>>(
 	}
 
 	async function destroySession() {
+		needsSync = true;
 		sessionData = {};
 		setCookieString = await makeCookie({}, config, 0, true);
 	}
@@ -96,6 +102,9 @@ export async function cookieSession<SessionType = Record<string, any>>(
 
 	return {
 		session: {
+			get needsSync() {
+				return needsSync;
+			},
 			get 'set-cookie'(): string | undefined {
 				return setCookieString;
 			},

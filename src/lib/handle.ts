@@ -8,13 +8,13 @@ export function handleSession(
 ): Handle {
 	return async function handle({ event, resolve }) {
 		const { session, cookies } = (await cookieSession(event.request.headers, options)) as any as {
-			session: { 'set-cookie': string; data: any };
+			session: { 'set-cookie': string; data: any; needsSync: boolean };
 			cookies: Record<string, string>;
 		};
 
 		(event.locals as any).session = session;
 		(event.locals as any).cookies = cookies;
-    
+
 		if (event.url.pathname === '/__session.json') {
 			const getSession = options.getSession ?? (() => session.data);
 			const sessionData = await getSession(event);
@@ -32,6 +32,10 @@ export function handleSession(
 
 		const sessionCookie = session['set-cookie'];
 		response.headers.append('set-cookie', sessionCookie);
+
+		if (session.needsSync) {
+			response.headers.set('x-svelte-kit-cookie-session-needs-sync', '1');
+		}
 
 		return response;
 	};
