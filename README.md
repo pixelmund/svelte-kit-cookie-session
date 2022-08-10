@@ -123,7 +123,7 @@ export const handle = sequence(sessionHandler, ({ resolve, event }) => {
 });
 ```
 
-### Secret rotation 
+### Secret rotation
 
 is supported. It allows you to change the secret used to sign and encrypt sessions while still being able to decrypt sessions that were created with a previous secret.
 
@@ -271,9 +271,12 @@ The `handleSession` function keeps track if the client needs to be synced with t
 If the header `x-svelte-kit-cookie-session-needs-sync` is set, you know that you have to sync the state.
 You can do so by fetching the magic `/__session.json` endpoints, provided by handleSession.
 
-***The enhance function can be extended like so:***
+**_The enhance function can be extended like so:_**
+
 ```ts
 /// lib/form.ts
+import { session } from "$app/stores";
+
 export function enhance(){
 	...
 	async function handle_submit(e) {
