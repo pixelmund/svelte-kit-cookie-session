@@ -236,17 +236,18 @@ export function load({ locals, request }) {
 
 ```js
 /** @type {import('@sveltejs/kit').PageData} */
-export function load({ parent }) {
+export function load({ parent, locals }) {
 	const { session } = await parent();
+	// or
+	// locals.session.data.session;
+	
 
 	// Already logged in:
 	if(session.userId) {
 		throw redirect(302, '/')
 	}
 
-	return {
-		session: locals.session.data
-	};
+	return {};
 }
 ```
 
