@@ -1,36 +1,37 @@
 {
 	"name": "svelte-kit-cookie-session",
-	"version": "3.0.6",
+	"version": "3.1.0",
 	"description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/pixelmund/svelte-kit-cookie-session.git"
 	},
 	"scripts": {
-		"dev": "svelte-kit dev",
-		"build": "svelte-kit build",
-		"package": "svelte-kit package",
-		"preview": "svelte-kit preview",
-		"prepare": "svelte-kit sync",
+		"dev": "vite dev",
+		"build": "vite build",
+		"package": "svelte-package",
+		"preview": "vite preview",
 		"test": "playwright test",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check --plugin-search-dir=. .",
 		"format": "prettier --write --plugin-search-dir=. .",
-		"package:publish": "pnpm package && cd package && npm publish"
+		"package:publish": "npm run package && cd package && npm publish"
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.22.2",
+		"@playwright/test": "^1.25.1",
 		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/kit": "next",
-		"prettier": "^2.6.2",
+		"@sveltejs/kit": "^1.0.0-next.437",
+		"@sveltejs/package": "^1.0.0-next.1",
+		"prettier": "^2.7.1",
 		"prettier-plugin-svelte": "^2.7.0",
-		"svelte": "^3.44.0",
-		"svelte-check": "^2.7.1",
-		"svelte-preprocess": "^4.10.6",
-		"svelte2tsx": "^0.5.10",
-		"tslib": "^2.3.1",
-		"typescript": "^4.7.2"
+		"svelte": "^3.49.0",
+		"svelte-check": "^2.8.1",
+		"svelte-preprocess": "^4.10.7",
+		"svelte2tsx": "^0.5.14",
+		"tslib": "^2.4.0",
+		"typescript": "^4.7.4",
+		"vite": "^3.0.9"
 	},
 	"type": "module",
 	"dependencies": {

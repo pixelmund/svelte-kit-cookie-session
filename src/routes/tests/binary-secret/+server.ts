@@ -1,9 +1,10 @@
 import { cookieSession } from '$lib';
+import { json, type RequestHandler } from '@sveltejs/kit';
 import { getCookieValue, initialData } from '../_utils';
 
 const BINARY_SECRET = new Uint8Array(32);
 
-export const get = async () => {
+export const GET: RequestHandler = async () => {
 	const { session: newSession } = await cookieSession('', {
 		secret: BINARY_SECRET
 	});
@@ -20,16 +21,12 @@ export const get = async () => {
 	const sessionData = sessionWithInitialCookie.data;
 
 	if (initialData.username !== sessionData.username) {
-		return {
-			body: {
-				ok: false
-			}
-		};
+		return json({
+			ok: false
+		});
 	}
 
-	return {
-		body: {
-			ok: true
-		}
-	};
+	return json({
+		ok: true
+	});
 };

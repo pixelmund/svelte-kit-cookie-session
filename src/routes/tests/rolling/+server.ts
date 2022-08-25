@@ -1,9 +1,10 @@
 import { cookieSession } from '$lib';
+import { json, type RequestHandler } from '@sveltejs/kit';
 import { getCookieValue, initialData, SECRET } from '../_utils';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const get = async () => {
+export const GET: RequestHandler = async () => {
 	const { session } = await cookieSession('', {
 		secret: SECRET,
 		rolling: true
@@ -22,16 +23,8 @@ export const get = async () => {
 	});
 
 	if (new Date(newSession.data.expires).getTime() === new Date(session.data.expires).getTime()) {
-		return {
-			body: {
-				ok: false
-			}
-		};
+		return json({ ok: false });
 	}
 
-	return {
-		body: {
-			ok: true
-		}
-	};
+	return json({ ok: true });
 };

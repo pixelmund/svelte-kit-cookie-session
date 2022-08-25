@@ -1,9 +1,9 @@
 import { cookieSession } from '$lib';
-import type { RequestHandler } from '@sveltejs/kit';
-import { initialData, SECRET } from '../_utils';
-import { Benchmark } from './_benchmark';
+import { json, type RequestHandler } from '@sveltejs/kit';
+import { initialData, SECRET } from '../../_utils';
+import { Benchmark } from '../_benchmark';
 
-export const post: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	const { runs = 1000 } = await request.json();
 
 	const benchmark = new Benchmark();
@@ -17,11 +17,9 @@ export const post: RequestHandler = async ({ request }) => {
 
 	const elapsed = benchmark.elapsed();
 
-	return {
-		body: {
-			runs,
-			elapsed: `${elapsed}ms`,
-			each: `${elapsed / runs}ms`
-		}
-	};
+	return json({
+		runs,
+		elapsed: `${elapsed}ms`,
+		each: `${elapsed / runs}ms`
+	});
 };

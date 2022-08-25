@@ -65,6 +65,14 @@ test('[FEAT]: Updating the session, keeps the expiry', async ({ page, request, c
 	expect(updatedData.data.views).toBeGreaterThan(initialData.data.views);
 });
 
+test('[FEAT]: Sync the session between server and client', async ({ page, context }) => {
+	await context.clearCookies();
+
+	await page.goto('/tests/sync-session');
+	await page.waitForTimeout(1000);
+	expect(await page.textContent('#session-store-views')).toBe('1');
+});
+
 test('[FEAT]: Destroying the session', async ({ page, request, context }) => {
 	await context.clearCookies();
 
