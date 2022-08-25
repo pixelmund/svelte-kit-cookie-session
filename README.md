@@ -36,7 +36,7 @@ You can upgrade by creating a `+layout.server.js` file at the root and returning
 > src/routes/+layout.server.ts
 
 ```js
-/** @type {import('@sveltejs/kit').LayoutServerLoad} */
+/** @type {import('./$types').LayoutServerLoad} */
 export const load = ({ locals }) => {
 	return {
 		session: locals.session.data // You can also use your old `getSession` function if you wish.
