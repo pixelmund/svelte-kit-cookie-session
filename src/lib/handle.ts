@@ -15,15 +15,6 @@ export function handleSession(
 		(event.locals as any).session = session;
 		(event.locals as any).cookies = cookies;
 
-		if (event.url.pathname === '/__session.json') {
-			const getSession = options.getSession ?? (() => session.data);
-			const sessionData = await getSession(event);
-			return new Response(JSON.stringify(sessionData), {
-				status: 200,
-				headers: { 'Content-Type': 'application/json' }
-			});
-		}
-
 		const response = await passedHandle({ event, resolve });
 
 		if (!session['set-cookie']) {
