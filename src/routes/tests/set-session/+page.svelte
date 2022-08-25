@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { session } from '$app/stores';
-
-	export let views: number;
+	import type { PageData } from './$types';
+	export let data: PageData;
 </script>
 
-<span id="views">{views}</span>
-<span id="session-store-views">{$session?.views}</span>
+<span id="views">{data.views}</span>
+<span id="session-store-views">{data.session?.views}</span>

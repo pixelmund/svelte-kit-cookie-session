@@ -1,19 +1,11 @@
-import type { RequestHandler } from '@sveltejs/kit';
+import type { ServerLoad } from '@sveltejs/kit';
 
-export const get: RequestHandler = async ({ locals }) => {
+export const load: ServerLoad = async ({ locals }) => {
 	if (locals.session.data.name) {
-		return {
-			body: {
-				name: locals.session.data.name
-			}
-		};
+		return { name: locals.session.data.name };
 	} else {
 		await locals.session.update(() => ({ name: 'Jürgen 🤩' }));
 	}
 
-	return {
-		body: {
-			name: locals.session.data.name
-		}
-	};
+	return { name: locals.session.data.name };
 };

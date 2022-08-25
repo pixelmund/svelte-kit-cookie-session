@@ -1,5 +1,6 @@
 <script lang="ts">
-	export let views: number;
+	import type { PageData } from './$types';
+	export let data: PageData;
 </script>
 
-<span id="views">{views}</span>
+<span id="views">{data.views}</span>

@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { session } from '$app/stores';
-
-	export let name: string;
-	$: session_name = $session.name;
+	import type { PageData } from './$types';
+	export let data: PageData;
 </script>
 
-<span id="name">{name}</span>
-<span id="session_name">{session_name}</span>
+<span id="name">{data.name}</span>
+<span id="session_name">{data.session.name}</span>
 

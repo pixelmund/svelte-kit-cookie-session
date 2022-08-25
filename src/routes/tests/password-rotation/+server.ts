@@ -1,7 +1,8 @@
 import { cookieSession } from '$lib';
+import { json, type RequestHandler } from '@sveltejs/kit';
 import { getCookieValue, initialData, SECRET } from '../_utils';
 
-export const get = async () => {
+export const GET: RequestHandler = async () => {
 	const { session: newSession } = await cookieSession('', {
 		secret: SECRET
 	});
@@ -21,27 +22,21 @@ export const get = async () => {
 	const sessionWithNewSecretData = sessionWithNewSecret.data;
 
 	if (initialData.username !== sessionWithNewSecretData?.username) {
-		return {
-			body: {
-				reason: 'Should have the same data',
-				ok: false
-			}
-		};
+		return json({
+			reason: 'Should have the same data',
+			ok: false
+		});
 	}
 
 	// @ts-ignore
 	if (initialCookie === getCookieValue(sessionWithNewSecret['set-cookie'])) {
-		return {
-			body: {
-				reason: "Cookie should get re-encrypted",
-				ok: false
-			}
-		};
+		return json({
+			reason: 'Cookie should get re-encrypted',
+			ok: false
+		});
 	}
 
-	return {
-		body: {
-			ok: true
-		}
-	};
+	return json({
+		ok: true
+	});
 };

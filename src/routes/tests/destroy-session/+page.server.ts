@@ -1,7 +1,6 @@
-import type { RequestHandler } from '@sveltejs/kit';
+import type { ServerLoad } from '@sveltejs/kit';
 
-export const get: RequestHandler = async ({ locals }) => {
-
+export const load: ServerLoad = async ({ locals }) => {
 	if (locals.session.data.views === 999) {
 		await locals.session.destroy();
 	} else {
@@ -9,8 +8,6 @@ export const get: RequestHandler = async ({ locals }) => {
 	}
 
 	return {
-		body: {
-			views: locals.session.data.views
-		}
+		views: locals.session.data.views
 	};
 };
