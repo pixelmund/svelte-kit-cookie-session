@@ -4,6 +4,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 	await locals.session.update((sd) => (sd.views == null ? { views: 0 } : { views: sd.views + 1 }));
 
 	return json({
-		data: locals.session.data as {}
+		data: locals.session.data as {},
+		expires: locals.session.expires,
 	});
 };

@@ -10,9 +10,8 @@ export interface SessionOptions {
 }
 
 export interface Session<SessionType = Record<string, any>> {
-  data: SessionType & {
-    expires?: Date;
-  }
+  data: SessionType;
+  expires: Date | undefined;
   update: (updateFn: (data: SessionType) => Partial<SessionType> | Promise<Partial<SessionType>>) => Promise<SessionType>;
   set: (data?: SessionType) => Promise<SessionType>;
   refresh: (expires_in_days?: number) => Promise<boolean>;

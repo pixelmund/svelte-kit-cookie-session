@@ -108,8 +108,13 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			get 'set-cookie'(): string | undefined {
 				return setCookieString;
 			},
+			get expires(): Date | undefined {
+				return sessionData ? sessionData.expires : undefined;
+			},
 			get data(): any {
-				return sessionData && !state.invalidDate && !state.destroy ? sessionData : {};
+				return sessionData && !state.invalidDate && !state.destroy
+					? { ...sessionData, expires: undefined }
+					: {};
 			},
 			set: async function (data: SessionType) {
 				await setSession(data);

@@ -24,7 +24,7 @@ export const GET: RequestHandler = async () => {
 		rolling: 99.9999999999
 	});
 
-	if (new Date(newSession.data.expires).getTime() === new Date(session.data.expires).getTime()) {
+	if (new Date(newSession.expires!).getTime() === new Date(session.expires!).getTime()) {
 		return json({ ok: false });
 	}
 

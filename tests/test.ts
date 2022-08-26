@@ -58,8 +58,8 @@ test('[FEAT]: Updating the session, keeps the expiry', async ({ page, request, c
 
 	expect(updatedMaxage).toBeLessThan(initialMaxage);
 
-	const updatedExpires = updatedData.data.expires.split('.')[0];
-	const initialExpires = initialData.data.expires.split('.')[0];
+	const updatedExpires = updatedData.expires.split('.')[0];
+	const initialExpires = initialData.expires.split('.')[0];
 
 	expect(updatedExpires).toStrictEqual(initialExpires);
 	expect(updatedData.data.views).toBeGreaterThan(initialData.data.views);
