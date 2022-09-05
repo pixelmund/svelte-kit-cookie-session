@@ -243,7 +243,7 @@ export function load({ parent, locals }) {
 	
 
 	// Already logged in:
-	if(session.userId) {
+	if(session.data.userId) {
 		throw redirect(302, '/')
 	}
 
