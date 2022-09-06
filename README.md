@@ -315,29 +315,3 @@ export function enhance(){
 }
 
 ```
-
-### Express/Connect Integration
-
-This library can integrate with express, polka or any other connect compatible middleware layer.
-
-**Please make sure to polyfill the webcrypto module on globalThis if you're doing so!**
-
-```ts
-import express from 'express';
-import { sessionMiddleware } from 'svelte-kit-cookie-session';
-
-const app = express();
-
-app.use(sessionMiddleware({ secret: 'A_VERY_SECRET_SECRET_AT_LEAST_32_CHARS_LONG' }));
-
-app.get('/', (req, res) => {
-	const sessionData = req.session.data;
-	const views = sessionData.views ?? 0;
-	const { views } = await req.session.set({ views: views + 1 });
-	return res.json({ views });
-});
-
-app.listen(4004, () => {
-	console.log('Listening on http://localhost:4004');
-});
-```

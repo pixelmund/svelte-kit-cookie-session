@@ -1,31 +1,42 @@
+import type { RequestEvent } from '@sveltejs/kit';
 import { encrypt, decrypt } from 'zencrypt';
-import { parse, serialize } from './cookie.js';
 import type { BinaryLike, SessionOptions } from './types';
 import {
 	daysToMaxage,
 	maxAgeToDateOfExpiry,
-	normalizeConfig,
-	type NormalizedConfig
+	normalizeConfig
 } from './utils.js';
 
 export async function cookieSession<SessionType = Record<string, any>>(
-	headersOrCookieString: Headers | string,
+	event: RequestEvent,
 	userConfig: SessionOptions
 ) {
 	const config = normalizeConfig(userConfig);
-
 	let needsSync = false;
-	let setCookieString: string | undefined;
-	const cookieString =
-		typeof headersOrCookieString === 'string'
-			? headersOrCookieString
-			: headersOrCookieString.get('cookie') || '';
-	const cookies = parse(cookieString, {});
 
-	let { data: sessionData, state } = await getSessionData(
-		cookies[config.key] || '',
-		config.secrets
-	);
+	// TODO: Remove this once new kit version is released
+	const sessionCookie = (event as any).cookies.get(config.key);
+	const serialize = (event as any).cookies.set;
+	const destroy = (event as any).cookies.delete;
+
+	let { data: sessionData, state } = await getSessionData(sessionCookie || '', config.secrets);
+
+	async function makeCookie(maxAge: number) {
+		const encode = async () => {
+			return `${await encrypt(sessionData, config.secrets[0].secret as string)}&id=${
+				config.secrets[0].id
+			}`;
+		};
+
+		return serialize(config.key, await encode(), {
+			httpOnly: config.cookie.httpOnly,
+			path: config.cookie.path,
+			sameSite: config.cookie.sameSite,
+			secure: config.cookie.secure,
+			domain: config.cookie?.domain,
+			maxAge: maxAge
+		});
+	}
 
 	async function setSession(sd: SessionType) {
 		let maxAge = config.cookie.maxAge;
@@ -41,7 +52,7 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			expires: maxAgeToDateOfExpiry(maxAge)
 		};
 
-		setCookieString = await makeCookie(sessionData, config, maxAge);
+		await makeCookie(maxAge);
 	}
 
 	async function refreshSession(expiresInDays?: number) {
@@ -58,13 +69,13 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			expires: maxAgeToDateOfExpiry(newMaxAge)
 		};
 
-		setCookieString = await makeCookie(sessionData, config, newMaxAge);
+		await makeCookie(newMaxAge);
 	}
 
 	async function destroySession() {
 		needsSync = true;
 		sessionData = {};
-		setCookieString = await makeCookie({}, config, 0, true);
+		destroy(config.key);
 	}
 
 	async function reEncryptSession() {
@@ -74,7 +85,7 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			maxAge = new Date(sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
 		}
 
-		setCookieString = await makeCookie(sessionData, config, maxAge);
+		await makeCookie(maxAge);
 	}
 
 	// If rolling is activated and the session exists we refresh the session on every request.
@@ -105,9 +116,6 @@ export async function cookieSession<SessionType = Record<string, any>>(
 			get needsSync() {
 				return needsSync;
 			},
-			get 'set-cookie'(): string | undefined {
-				return setCookieString;
-			},
 			get expires(): Date | undefined {
 				return sessionData ? sessionData.expires : undefined;
 			},
@@ -135,52 +143,28 @@ export async function cookieSession<SessionType = Record<string, any>>(
 				await destroySession();
 				return true;
 			}
-		},
-		cookies
+		}
 	};
-}
-
-async function makeCookie(
-	sessionData: any,
-	config: NormalizedConfig,
-	maxAge: number,
-	destroy: boolean = false
-) {
-	const encode = async () => {
-		return `${await encrypt(sessionData, config.secrets[0].secret as string)}&id=${
-			config.secrets[0].id
-		}`;
-	};
-
-	return serialize(config.key, destroy ? '0' : await encode(), {
-		httpOnly: config.cookie.httpOnly,
-		path: config.cookie.path,
-		sameSite: config.cookie.sameSite,
-		secure: config.cookie.secure,
-		domain: config.cookie?.domain,
-		maxAge: destroy ? undefined : maxAge,
-		expires: destroy ? new Date(Date.now() - 360000000) : undefined
-	});
 }
 
 async function getSessionData(
 	sessionCookieString: string,
 	secrets: Array<{ id: number; secret: BinaryLike }>
 ) {
-	const [sessionCookie, secret_id] = sessionCookieString.split('&id=');
-
 	const state = {
 		invalidDate: false,
 		reEncrypt: false,
 		destroy: false
 	};
 
-	if (sessionCookie.length === 0) {
+	if (sessionCookieString.length === 0) {
 		return {
 			state,
 			data: {}
 		};
 	}
+
+	const [sessionCookie, secret_id] = sessionCookieString.split('&id=');
 
 	// If we have a session cookie we try to get the id from the cookie value and use it to decode the cookie.
 	// If the decodeID is not the first secret in the secrets array we should re encrypt to the newest secret.

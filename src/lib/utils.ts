@@ -37,9 +37,6 @@ export function normalizeConfig(options: SessionOptions) : NormalizedConfig {
 		throw new Error('Please provide at least one secret');
 	}
 
-	const isSecureCookie =
-		typeof process !== 'undefined' ? process.env.NODE_ENV !== 'development' : false;
-
 	return {
 		key: options.key || 'kit.session',
 		expiresInDays: options.expires || 7,
@@ -49,7 +46,7 @@ export function normalizeConfig(options: SessionOptions) : NormalizedConfig {
 			sameSite: options?.cookie?.sameSite || 'lax',
 			path: options?.cookie?.path || '/',
 			domain: options?.cookie?.domain || undefined,
-			secure: options?.cookie?.secure ?? isSecureCookie
+			secure: options?.cookie?.secure ?? true
 		},
 		rolling: options?.rolling ?? false,
 		secrets: Array.isArray(options.secret) ? options.secret : [{ id: 1, secret: options.secret }]
