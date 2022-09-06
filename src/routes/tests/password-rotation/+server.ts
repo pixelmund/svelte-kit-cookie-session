@@ -2,17 +2,17 @@ import { cookieSession } from '$lib';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { getCookieValue, initialData, SECRET } from '../_utils';
 
-export const GET: RequestHandler = async () => {
-	const { session: newSession } = await cookieSession('', {
+export const GET: RequestHandler = async (event) => {
+	const { session: newSession } = await cookieSession(event, {
 		secret: SECRET
 	});
 
 	await newSession.set(initialData);
 
 	// @ts-ignore
-	const initialCookie = getCookieValue(newSession['set-cookie']);
+	const initialCookie = event.cookies.get('kit.session');
 
-	const { session: sessionWithNewSecret } = await cookieSession(initialCookie, {
+	const { session: sessionWithNewSecret } = await cookieSession(event, {
 		secret: [
 			{ id: 2, secret: 'JmLy4vMnwmQ75zhSJPc7Ud6U0anKnDZZ' },
 			{ id: 1, secret: SECRET }
@@ -29,7 +29,7 @@ export const GET: RequestHandler = async () => {
 	}
 
 	// @ts-ignore
-	if (initialCookie === getCookieValue(sessionWithNewSecret['set-cookie'])) {
+	if (initialCookie === event.cookies.get('kit.session')) {
 		return json({
 			reason: 'Cookie should get re-encrypted',
 			ok: false

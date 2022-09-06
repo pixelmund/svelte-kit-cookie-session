@@ -1,24 +1,20 @@
 import { cookieSession } from '$lib';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { getCookieValue, initialData, SECRET } from '../_utils';
+import { initialData, SECRET } from '../_utils';
 import { Benchmark } from './_benchmark';
 
-export const POST: RequestHandler = async ({ request }) => {
-	const { runs = 1000 } = await request.json();
+export const POST: RequestHandler = async (event) => {
+	const { runs = 1000 } = await event.request.json();
 
-	const { session: initialSession } = await cookieSession('', { secret: SECRET });
+	const { session: initialSession } = await cookieSession(event, { secret: SECRET });
 	await initialSession.set(initialData);
-	// @ts-ignore
-	const initialCookie = getCookieValue(initialSession['set-cookie']);
 
 	const benchmark = new Benchmark();
 
 	for (let index = 0; index < runs; index += 1) {
-		const { session } = await cookieSession(initialCookie, {
+		await cookieSession(event, {
 			secret: SECRET
 		});
-		session.data;
-		await session.set({ ...initialData, username: 'Olaf' });
 	}
 
 	const elapsed = benchmark.elapsed();

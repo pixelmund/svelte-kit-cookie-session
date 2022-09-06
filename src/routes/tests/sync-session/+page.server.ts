@@ -1,7 +1,11 @@
-import type { Action } from '@sveltejs/kit';
+import type { Actions } from '@sveltejs/kit';
 
-export const POST: Action = async ({ locals }) => {
-	await locals.session.update((sd) => (sd.views == null ? { views: 1 } : { views: sd.views + 1 }));
+export const actions: Actions = {
+	default: async ({ locals }) => {
+		await locals.session.update((sd) =>
+			sd.views == null ? { views: 1 } : { views: sd.views + 1 }
+		);
 
-	return;
+		return {};
+	}
 };

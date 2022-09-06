@@ -1,23 +1,20 @@
 import { cookieSession } from '$lib';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { getCookieValue, initialData, SECRET } from '../_utils';
+import { initialData, SECRET } from '../_utils';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const GET: RequestHandler = async () => {
-	const { session } = await cookieSession('', {
+export const GET: RequestHandler = async (event) => {
+	const { session } = await cookieSession(event, {
 		secret: SECRET,
 		rolling: true
 	});
 
 	await session.set(initialData);
 
-	// @ts-ignore
-	const cookie = getCookieValue(session['set-cookie']);
-
 	await sleep(4000);
 
-	const { session: newSession } = await cookieSession(cookie, {
+	const { session: newSession } = await cookieSession(event, {
 		secret: SECRET,
 		rolling: true
 	});

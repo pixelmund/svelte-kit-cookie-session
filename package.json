@@ -21,7 +21,7 @@
 	"devDependencies": {
 		"@playwright/test": "^1.25.1",
 		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/kit": "^1.0.0-next.471",
+		"@sveltejs/kit": "^1.0.0-next.472",
 		"@sveltejs/package": "^1.0.0-next.1",
 		"prettier": "^2.7.1",
 		"prettier-plugin-svelte": "^2.7.0",

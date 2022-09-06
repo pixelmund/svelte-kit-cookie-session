@@ -13,11 +13,10 @@ export async function cookieSession<SessionType = Record<string, any>>(
 ) {
 	const config = normalizeConfig(userConfig);
 	let needsSync = false;
-
-	// TODO: Remove this once new kit version is released
-	const sessionCookie = (event as any).cookies.get(config.key);
-	const serialize = (event as any).cookies.set;
-	const destroy = (event as any).cookies.delete;
+	
+	const sessionCookie = event.cookies.get(config.key);
+	const serialize = event.cookies.set;
+	const destroy = event.cookies.delete;
 
 	let { data: sessionData, state } = await getSessionData(sessionCookie || '', config.secrets);
 

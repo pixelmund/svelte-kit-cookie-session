@@ -4,17 +4,14 @@ import { getCookieValue, initialData } from '../_utils';
 
 const BINARY_SECRET = new Uint8Array(32);
 
-export const GET: RequestHandler = async () => {
-	const { session: newSession } = await cookieSession('', {
+export const GET: RequestHandler = async (event) => {
+	const { session: newSession } = await cookieSession(event, {
 		secret: BINARY_SECRET
 	});
 
 	await newSession.set(initialData);
 
-	// @ts-ignore
-	const cookie = getCookieValue(newSession['set-cookie']);
-
-	const { session: sessionWithInitialCookie } = await cookieSession(cookie, {
+	const { session: sessionWithInitialCookie } = await cookieSession(event, {
 		secret: BINARY_SECRET
 	});
 
