@@ -256,11 +256,13 @@ export function load({ parent, locals }) {
 > src/routes/logout/+page.server.js
 
 ```js
-/** @type {import('@sveltejs/kit').Action} */
-export async function DELETE({ locals }) {
-	await locals.session.destroy();
-	return;
-}
+/** @type {import('@sveltejs/kit').Actions} */
+export const actions = {
+	default: async () => {
+		await locals.session.destroy();
+		return {};
+	}
+};
 ```
 
 ### Refresh the session with the same data but renew the expiration date
@@ -268,12 +270,13 @@ export async function DELETE({ locals }) {
 > src/routes/refresh/+page.server.js
 
 ```js
-/** @type {import('@sveltejs/kit').Action} */
-export async function PUT({ locals, request }) {
-	await locals.session.refresh(/** Optional new expiration time in days */);
-
-	return;
-}
+/** @type {import('@sveltejs/kit').Actions} */
+export const actions = {
+	default: async () => {
+		await locals.session.refresh(/** Optional new expiration time in days */);
+		return {};
+	}
+};
 ```
 
 ### Refresh the session expiration on every request `Rolling` -> default is false!
@@ -287,4 +290,3 @@ handleSession({
 	rolling: true // or 1-100 for percentage o the expiry date met,
 });
 ```
-
