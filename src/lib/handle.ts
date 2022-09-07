@@ -1,4 +1,4 @@
-import { cookieSession } from './core.js';
+import { CookieSession } from './core.js';
 import type { Handle } from '@sveltejs/kit';
 import type { SessionOptions } from './types';
 
@@ -7,9 +7,8 @@ export function handleSession(
 	passedHandle: Handle = async ({ event, resolve }) => resolve(event)
 ): Handle {
 	return async function handle({ event, resolve }) {
-		const { session } = (await cookieSession(event, options)) as any as {
-			session: { 'set-cookie': string; data: any; needsSync: boolean };
-		};
+		const session = new CookieSession(event, options);
+		await session.init();
 
 		(event.locals as any).session = session;
 
