@@ -179,21 +179,7 @@ test('[INTEGRATION]: Wrong secret deletes the session', async ({ page, request, 
 	expect(data.ok).toBe(true);
 });
 
-test('[BENCHMARK]: Set a new session', async ({ request }) => {
-	const response = await request.post('/tests/benchmark/set-session', {
-		data: {
-			runs: 5000
-		}
-	});
-
-	await expect(response).toBeOK();
-
-	const data = await response.json();
-
-	console.log('[BENCHMARK]: Set -> ', { ...data });
-});
-
-test('[BENCHMARK]: Get an already existing session', async ({ request }) => {
+test('[BENCHMARK]: Get session', async ({ request }) => {
 	const response = await request.post('/tests/benchmark/get-session', {
 		data: {
 			runs: 5000
@@ -205,18 +191,4 @@ test('[BENCHMARK]: Get an already existing session', async ({ request }) => {
 	const data = await response.json();
 
 	console.log('[BENCHMARK]: Get -> ', { ...data });
-});
-
-test('[BENCHMARK]: Get & Set', async ({ request }) => {
-	const response = await request.post('/tests/benchmark', {
-		data: {
-			runs: 5000
-		}
-	});
-
-	await expect(response).toBeOK();
-
-	const data = await response.json();
-
-	console.log('[BENCHMARK]: Get & Set -> ', { ...data });
 });

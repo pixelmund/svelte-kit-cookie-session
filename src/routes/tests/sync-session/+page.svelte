@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { invalidate } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-
 	import { onMount } from 'svelte';
 
 	async function updateSession() {
 		const response = await fetch('/tests/sync-session', {
 			method: 'POST',
-			headers: { Accept: 'application/json' }
+			headers: { Accept: 'application/json' },
+			body: new FormData(),
 		});
 		if (response.headers.has('x-svelte-kit-cookie-session-needs-sync')) {
-			await invalidate();
+			await invalidateAll();
 		}
 	}
 

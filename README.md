@@ -21,7 +21,6 @@ The seal stored on the client contains the session data, not your server, making
 1. [Accessing the Session](#accessing-the-session)
 1. [Destroying the Session](#destroying-the-session)
 1. [Refreshing the Session](#refresh-the-session-with-the-same-data-but-renew-the-expiration-date)
-1. [Sync sessions between browser and server](#sync-session-between-browser-and-server)
 
 **By default the cookie has an ⏰ expiration time of 7 days**, set via [`expires`] which should be a `number` in `days`.
 
@@ -73,7 +72,6 @@ Update your `app.d.ts` file to look something like:
 declare namespace App {
 	interface Locals {
 		session: import('svelte-kit-cookie-session').Session<SessionData>;
-		cookies: Record<string, string>; // all parsed cookies are automatically set from handleSession to avoid overhead
 	}
 
 	interface Platform {}
@@ -112,7 +110,6 @@ export const handle = handleSession(
 	},
 	({ event, resolve }) => {
 		// event.locals is populated with the session `event.locals.session`
-		// event.locals is also populated with all parsed cookies by handleSession, it would cause overhead to parse them again - `event.locals.cookies`.
 
 		// Do anything you want here
 		return resolve(event);
@@ -185,14 +182,16 @@ Setting the session can be done in two ways, either via the `set` method or via 
 > src/routes/counter/+page.server.js
 
 ```js
-/** @type {import('@sveltejs/kit').Action} */
-export async function POST({ locals, request }) {
-	const { counter = 0 } = locals.session.data;
+/** @type {import('@sveltejs/kit').Actions} */
+export const actions = {
+	default: async ({ locals }) => {
+		const { counter = 0 } = locals.session.data;
 
-	await locals.session.set({ counter: counter + 1 });
+		await locals.session.set({ counter: counter + 1 });
 
-	return;
-}
+		return {};
+	}
+};
 ```
 
 `Sometimes you don't want to get the session data first only to increment a counter or some other value, that's where the update method comes in to play`
@@ -200,12 +199,13 @@ export async function POST({ locals, request }) {
 > src/routes/counter/+page.server.ts
 
 ```js
-/** @type {import('@sveltejs/kit').Action} */
-export async function POST({ locals, request }) {
-	await locals.session.update(({ count }) => ({ count: count ? count + 1 : 0 }));
-
-	return;
-}
+/** @type {import('@sveltejs/kit').Actions} */
+export const actions = {
+	default: async ({ locals, request }) => {
+		await locals.session.update(({ count }) => ({ count: count ? count + 1 : 0 }));
+		return {};
+	}
+};
 ```
 
 ### Accessing The Session
@@ -240,7 +240,7 @@ export function load({ parent, locals }) {
 	const { session } = await parent();
 	// or
 	// locals.session.data.session;
-	
+
 
 	// Already logged in:
 	if(session.userId) {
@@ -256,11 +256,13 @@ export function load({ parent, locals }) {
 > src/routes/logout/+page.server.js
 
 ```js
-/** @type {import('@sveltejs/kit').Action} */
-export async function DELETE({ locals }) {
-	await locals.session.destroy();
-	return
-}
+/** @type {import('@sveltejs/kit').Actions} */
+export const actions = {
+	default: async () => {
+		await locals.session.destroy();
+		return {};
+	}
+};
 ```
 
 ### Refresh the session with the same data but renew the expiration date
@@ -268,12 +270,13 @@ export async function DELETE({ locals }) {
 > src/routes/refresh/+page.server.js
 
 ```js
-/** @type {import('@sveltejs/kit').Action} */
-export async function PUT({ locals, request }) {
-	await locals.session.refresh(/** Optional new expiration time in days */);
-
-	return;
-}
+/** @type {import('@sveltejs/kit').Actions} */
+export const actions = {
+	default: async () => {
+		await locals.session.refresh(/** Optional new expiration time in days */);
+		return {};
+	}
+};
 ```
 
 ### Refresh the session expiration on every request `Rolling` -> default is false!
@@ -285,59 +288,5 @@ You can also specify a percentage from 1 to 100 which refreshes the session when
 ```js
 handleSession({
 	rolling: true // or 1-100 for percentage o the expiry date met,
-});
-```
-
-### Sync session between browser and server
-
-The `handleSession` function keeps track if the client needs to be synced with the server!
-If the header `x-svelte-kit-cookie-session-needs-sync` is set, you know that you have to sync the state.
-You can do so by using the `invalidate` function.
-
-**_The enhance function can be extended like so:_**
-
-```ts
-import { invalidate } from "$app/navigation";
-
-/// lib/form.ts
-export function enhance(){
-	...
-	async function handle_submit(e) {
-		...
-		if (response.ok) {
-			if (response.headers.has('x-svelte-kit-cookie-session-needs-sync')) {
-				await invalidate();
-			}
-			...
-		}
-		...
-	}
-}
-
-```
-
-### Express/Connect Integration
-
-This library can integrate with express, polka or any other connect compatible middleware layer.
-
-**Please make sure to polyfill the webcrypto module on globalThis if you're doing so!**
-
-```ts
-import express from 'express';
-import { sessionMiddleware } from 'svelte-kit-cookie-session';
-
-const app = express();
-
-app.use(sessionMiddleware({ secret: 'A_VERY_SECRET_SECRET_AT_LEAST_32_CHARS_LONG' }));
-
-app.get('/', (req, res) => {
-	const sessionData = req.session.data;
-	const views = sessionData.views ?? 0;
-	const { views } = await req.session.set({ views: views + 1 });
-	return res.json({ views });
-});
-
-app.listen(4004, () => {
-	console.log('Listening on http://localhost:4004');
 });
 ```
