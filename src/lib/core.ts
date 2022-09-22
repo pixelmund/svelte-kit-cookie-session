@@ -99,7 +99,13 @@ export class CookieSession<SessionType = Record<string, any>> {
 	public destroy() {
 		this.#state.needsSync = true;
 		this.#sessionData = {};
-		this.#cookies.delete(this.#config.key);
+		this.#cookies.delete(this.#config.key, {
+			httpOnly: this.#config.cookie.httpOnly,
+			path: this.#config.cookie.path,
+			sameSite: this.#config.cookie.sameSite,
+			secure: this.#config.cookie.secure,
+			domain: this.#config.cookie?.domain
+		});
 	}
 
 	public async refresh(expiresInDays?: number) {
