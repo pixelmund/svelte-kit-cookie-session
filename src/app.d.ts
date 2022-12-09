@@ -11,7 +11,13 @@ declare namespace App {
 	interface Locals {
 		session: import('./lib').Session<SessionData>;
 	}
+
 	// interface Platform {}
+	
 	interface Session extends SessionData {}
+
+	interface PageData {
+		session: SessionData;
+	}
 	// interface Stuff {}
 }

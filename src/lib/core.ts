@@ -11,7 +11,9 @@ import {
 export class CookieSession<SessionType = Record<string, any>> {
 	#config: NormalizedConfig;
 	#cookies: Cookies;
-	#sessionData: any = {};
+	#event: RequestEvent;
+	#initialData: any = {};
+	#sessionData: any = undefined;
 	#state: {
 		needsSync: boolean;
 		invalidDate: boolean;
@@ -20,6 +22,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 	} = { destroy: false, reEncrypt: false, invalidDate: false, needsSync: false };
 
 	constructor(event: RequestEvent, userConfig: SessionOptions) {
+		this.#event = event;
 		this.#config = normalizeConfig(userConfig);
 		this.#cookies = event.cookies;
 	}
@@ -31,7 +34,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 	get data(): SessionType {
 		return this.#sessionData && !this.#state.invalidDate && !this.#state.destroy
 			? { ...this.#sessionData, expires: undefined }
-			: {};
+			: this.#initialData;
 	}
 
 	get needsSync() {
@@ -40,6 +43,8 @@ export class CookieSession<SessionType = Record<string, any>> {
 
 	async init() {
 		const { data, state } = await this.getSessionData();
+
+		this.#initialData = await this.#config.init(this.#event);
 
 		if (data) {
 			this.#sessionData = data;
@@ -92,8 +97,9 @@ export class CookieSession<SessionType = Record<string, any>> {
 	public async update(
 		updateFn: (data: SessionType) => Partial<SessionType> | Promise<Partial<SessionType>>
 	) {
-		const sd = await updateFn(this.#sessionData);
-		return await this.set({ ...this.#sessionData, ...sd });
+		const dt = this.data;
+		const sd = await updateFn(dt);
+		return await this.set({ ...dt, ...sd });
 	}
 
 	public destroy() {
@@ -164,7 +170,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 				reEncrypt: false,
 				destroy: false
 			},
-			data: {}
+			data: undefined
 		};
 
 		const sessionCookieString = this.#cookies.get(this.#config.key) || '';

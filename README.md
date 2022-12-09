@@ -67,11 +67,19 @@ Update your `app.d.ts` file to look something like:
 ```ts
 /// <reference types="@sveltejs/kit" />
 
+interface SessionData {
+	views: number;
+}
+
 // See https://kit.svelte.dev/docs#typescript
 // for information about these interfaces
 declare namespace App {
 	interface Locals {
 		session: import('svelte-kit-cookie-session').Session<SessionData>;
+	}
+
+	interface PageData {
+		session: SessionData;
 	}
 
 	interface Platform {}
@@ -99,6 +107,10 @@ import { handleSession } from 'svelte-kit-cookie-session';
 
 // You can do it like this, without passing a own handle function
 export const handle = handleSession({
+	// Optional initial state of the session, default is an empty object {}
+	// init: (event) => ({
+	// 	views: 0
+	// }),
 	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
 });
 
