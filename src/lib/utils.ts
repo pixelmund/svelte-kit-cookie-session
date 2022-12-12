@@ -1,6 +1,6 @@
 import type { BinaryLike, SessionOptions } from './types';
 import { dev } from '$app/environment';
-import type { RequestEvent } from '../routes/tests/destroy-session/$types';
+import type { RequestEvent } from '@sveltejs/kit';
 import type { MaybePromise } from '@sveltejs/kit/types/private';
 
 export function daysToMaxage(days: number) {
