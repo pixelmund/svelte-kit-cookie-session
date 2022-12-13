@@ -23,7 +23,10 @@ export class CookieSession<SessionType = Record<string, any>> {
 
 	constructor(event: RequestEvent, userConfig: SessionOptions) {
 		this.#event = event;
-		this.#config = normalizeConfig(userConfig);
+		const isSecure =
+			event.request.headers.get('x-forwarded-proto') === 'https' ||
+			event.request.url.startsWith('https');
+		this.#config = normalizeConfig(userConfig, isSecure);
 		this.#cookies = event.cookies;
 	}
 

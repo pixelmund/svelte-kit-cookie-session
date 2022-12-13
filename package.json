@@ -1,6 +1,6 @@
 {
 	"name": "svelte-kit-cookie-session",
-	"version": "3.3.1",
+	"version": "3.3.2",
 	"description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
 	"repository": {
 		"type": "git",
@@ -16,7 +16,7 @@
 		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check --plugin-search-dir=. .",
 		"format": "prettier --write --plugin-search-dir=. .",
-		"package:publish": "rimraf ./.svelte-kit/types && npm run package && cd package && npm publish"
+		"package:publish": "npm run package && cd package && npm publish"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.25.1",
@@ -36,6 +36,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"esm-env": "^1.0.0",
 		"zencrypt": "^0.0.7"
 	},
 	"keywords": [

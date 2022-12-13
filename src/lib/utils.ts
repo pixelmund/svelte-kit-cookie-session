@@ -1,5 +1,4 @@
 import type { BinaryLike, SessionOptions } from './types';
-import { dev } from '$app/environment';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { MaybePromise } from '@sveltejs/kit/types/private';
 
@@ -36,7 +35,7 @@ export interface NormalizedConfig {
 	secrets: Array<Secret>;
 }
 
-export function normalizeConfig(options: SessionOptions): NormalizedConfig {
+export function normalizeConfig(options: SessionOptions, isSecure: boolean = false): NormalizedConfig {
 	if (options.secret == null) {
 		throw new Error('Please provide at least one secret');
 	}
@@ -53,7 +52,7 @@ export function normalizeConfig(options: SessionOptions): NormalizedConfig {
 			sameSite: options?.cookie?.sameSite || 'lax',
 			path: options?.cookie?.path || '/',
 			domain: options?.cookie?.domain || undefined,
-			secure: options?.cookie?.secure ?? (dev ? false : true)
+			secure: options?.cookie?.secure ?? isSecure
 		},
 		rolling: options?.rolling ?? false,
 		secrets: Array.isArray(options.secret) ? options.secret : [{ id: 1, secret: options.secret }]
