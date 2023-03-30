@@ -23,6 +23,7 @@ export interface NormalizedConfig {
 	init: (event: RequestEvent) => MaybePromise<any>;
 	key: string;
 	expiresInDays: number;
+	chunked: boolean;
 	cookie: {
 		maxAge: number;
 		httpOnly: boolean;
@@ -54,6 +55,7 @@ export function normalizeConfig(options: SessionOptions, isSecure: boolean = fal
 			domain: options?.cookie?.domain || undefined,
 			secure: options?.cookie?.secure ?? isSecure
 		},
+		chunked: options?.chunked ?? false,
 		rolling: options?.rolling ?? false,
 		secrets: Array.isArray(options.secret) ? options.secret : [{ id: 1, secret: options.secret }]
 	};

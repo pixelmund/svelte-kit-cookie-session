@@ -110,6 +110,29 @@ test('[FEAT]: Password rotation', async ({ page, request, context }) => {
 	expect(data.ok).toBe(true);
 });
 
+test('[FEAT]: Chunked cookies', async ({ page, request, context }) => {
+	await context.clearCookies();
+
+	await page.goto('/tests/chunked-session');
+	expect(await page.textContent('#views')).toContain('0,1,2,3,4,5');
+	expect(await page.textContent('#session-store-views')).toBe('undefined');
+
+	await page.reload();
+
+	expect(await page.textContent('#views')).toContain('0,1,2,3,4,5');
+	expect(await page.textContent('#session-store-views')).toContain('0,1,2,3,4,5');
+
+	await context.clearCookies();
+
+	await page.goto('/tests/chunked-session/delete');
+	expect(await page.textContent('#views')).toContain('0,1,2,3,4,5');
+	expect(await page.textContent('#session-store-views')).toBe('undefined');
+
+	await page.reload();
+	expect(await page.textContent('#views')).toBe('undefined');
+	expect(await page.textContent('#session-store-views')).toContain('0,1,2,3,4,5');
+});
+
 test('[FEAT]: Rolling = true should refresh the session every request', async ({
 	page,
 	request,

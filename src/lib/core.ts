@@ -108,13 +108,26 @@ export class CookieSession<SessionType = Record<string, any>> {
 	public destroy() {
 		this.#state.needsSync = true;
 		this.#sessionData = {};
-		this.#cookies.delete(this.#config.key, {
-			httpOnly: this.#config.cookie.httpOnly,
-			path: this.#config.cookie.path,
-			sameSite: this.#config.cookie.sameSite,
-			secure: this.#config.cookie.secure,
-			domain: this.#config.cookie?.domain
-		});
+
+		if (!this.#config.chunked) {
+			this.deleteCookies([
+				{
+					name: this.#config.key,
+					value: ''
+				}
+			]);
+		}
+
+		const chunks = this.getChunkedCookies();
+		const cookiesToDelete = chunks;
+
+		const meta = this.#cookies.get(`${this.#config.key}.meta`);
+
+		if (meta) {
+			cookiesToDelete.push({ name: `${this.#config.key}.meta`, value: meta });
+		}
+
+		this.deleteCookies(cookiesToDelete);
 	}
 
 	public async refresh(expiresInDays?: number) {
@@ -149,21 +162,73 @@ export class CookieSession<SessionType = Record<string, any>> {
 		await this.setCookie(newMaxAge);
 	}
 
-	private async setCookie(maxAge: number) {
-		const encode = async () => {
-			return `${await encrypt(this.#sessionData, this.#config.secrets[0].secret as string)}&id=${
-				this.#config.secrets[0].id
-			}`;
-		};
+	private chunkString(str: string, chunkSize: number) {
+		const chunks = [];
+		for (let i = 0; i < str.length; i += chunkSize) {
+			chunks.push(str.substring(i, i + chunkSize));
+		}
+		return chunks;
+	}
 
-		return this.#cookies.set(this.#config.key, await encode(), {
+	private async setCookie(maxAge: number) {
+		const cookieOptions = {
 			httpOnly: this.#config.cookie.httpOnly,
 			path: this.#config.cookie.path,
 			sameSite: this.#config.cookie.sameSite,
 			secure: this.#config.cookie.secure,
 			domain: this.#config.cookie?.domain,
 			maxAge: maxAge
-		});
+		};
+
+		const encode = () => {
+			return encrypt(this.#sessionData, this.#config.secrets[0].secret as string);
+		};
+
+		const id = String(this.#config.secrets[0].id);
+
+		if (!this.#config.chunked) {
+			return this.#cookies.set(this.#config.key, `${await encode()}&id=${id}`, cookieOptions);
+		}
+
+		const metaCookie = this.#cookies.get(`${this.#config.key}.meta`);
+		const [currentChunkAmount] = metaCookie ? metaCookie.split('-') : [0];
+
+		// We need to check if the user has chunks enabled and if so we need to encrypt the data in chunks
+		const encoded = await encode();
+
+		const chunkSize = 3996 - this.#config.key.length - 16 - id.length;
+		const chunks = this.chunkString(encoded, chunkSize);
+
+		// If the amount of chunks is different from the amount of chunks we have stored in the meta cookie we need to delete the old ones
+
+		if (currentChunkAmount !== String(chunks.length)) {
+			const cookiesToDelete = this.getChunkedCookies();
+			this.deleteCookies(cookiesToDelete);
+		}
+
+		if (chunks.length > 0) {
+			for (let i = 0; i < chunks.length; i++) {
+				this.#cookies.set(`${this.#config.key}.${i}`, chunks[i], cookieOptions);
+			}
+
+			this.#cookies.set(
+				`${this.#config.key}.meta`,
+				`${chunks.length}-${this.#config.secrets[0].id}`,
+				cookieOptions
+			);
+		}
+	}
+
+	private deleteCookies(cookies: { name: string; value: string }[]) {
+		for (const cookie of cookies) {
+			this.#cookies.delete(cookie.name, {
+				httpOnly: this.#config.cookie.httpOnly,
+				path: this.#config.cookie.path,
+				sameSite: this.#config.cookie.sameSite,
+				secure: this.#config.cookie.secure,
+				domain: this.#config.cookie?.domain
+			});
+		}
 	}
 
 	private async getSessionData() {
@@ -176,19 +241,34 @@ export class CookieSession<SessionType = Record<string, any>> {
 			data: undefined
 		};
 
-		const sessionCookieString = this.#cookies.get(this.#config.key) || '';
+		let secret_id = this.#config.secrets[0].id;
+		let sessionCookie: string = '';
 
-		if (sessionCookieString.length === 0) {
-			return session;
+		if (!this.#config.chunked) {
+			const splitted = (this.#cookies.get(this.#config.key) || '').split('&id=');
+			sessionCookie = splitted[0];
+			secret_id = Number(splitted[1]);
+		} else {
+			const chunks = this.getChunkedCookies();
+			const metaCookie = this.#cookies.get(`${this.#config.key}.meta`);
+
+			if (metaCookie) {
+				const meta = metaCookie?.split('-');
+				secret_id = Number(meta[1]);
+			}
+
+			sessionCookie = chunks.map((chunk) => chunk.value).join('');
 		}
 
-		const [sessionCookie, secret_id] = sessionCookieString.split('&id=');
+		if (sessionCookie.length === 0) {
+			return session;
+		}
 
 		// If we have a session cookie we try to get the id from the cookie value and use it to decode the cookie.
 		// If the decodeID is not the first secret in the secrets array we should re encrypt to the newest secret.
 
 		// Split the sessionCookie on the &id= field to get the id we used to encrypt the session.
-		const decodeID = secret_id ? Number(secret_id) : 1;
+		const decodeID = secret_id ? Number(secret_id) : this.#config.secrets[0].id;
 
 		// Use the id from the cookie or the initial one which is always 1.
 		let secret = this.#config.secrets.find((sec) => sec.id === decodeID);
@@ -221,5 +301,21 @@ export class CookieSession<SessionType = Record<string, any>> {
 			session.state.destroy = true;
 			return session;
 		}
+	}
+
+	private getChunkedCookies() {
+		const allCookies = this.#cookies
+			.getAll()
+			.filter((cookie) => cookie.name.startsWith(this.#config.key));
+
+		const chunks = allCookies
+			.filter((cookie) => cookie.name.endsWith('.meta') === false)
+			.sort((a, b) => {
+				const aIndex = Number(a.name.split('.')[1]);
+				const bIndex = Number(b.name.split('.')[1]);
+				return aIndex - bIndex;
+			});
+
+		return chunks;
 	}
 }

@@ -1,9 +1,6 @@
 /// <reference types="@sveltejs/kit" />
 
-interface SessionData {
-	views: number;
-	name?: string;
-}
+type SessionData = any;
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces

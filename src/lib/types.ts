@@ -26,6 +26,13 @@ export interface SessionOptions {
 	 *
 	 **/
 	expires?: number;
+
+	/**
+	 * 
+	 */
+
+	chunked?: boolean;
+	
 	/**
 	 * Should the session refresh on every request?
 	 */

@@ -1,6 +1,6 @@
 {
 	"name": "svelte-kit-cookie-session",
-	"version": "3.3.2",
+	"version": "3.4.0",
 	"description": "⚒️ Encrypted 'stateless' cookie sessions for SvelteKit",
 	"repository": {
 		"type": "git",
@@ -20,8 +20,8 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.25.1",
-		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/kit": "^1.0.0-next.493",
+		"@sveltejs/adapter-auto": "2.0.0",
+		"@sveltejs/kit": "^1.14.0",
 		"@sveltejs/package": "^1.0.0-next.6",
 		"prettier": "^2.7.1",
 		"prettier-plugin-svelte": "^2.7.0",
@@ -32,7 +32,7 @@
 		"svelte2tsx": "^0.5.14",
 		"tslib": "^2.4.0",
 		"typescript": "^4.7.4",
-		"vite": "^3.0.9"
+		"vite": "^4.2.1"
 	},
 	"type": "module",
 	"dependencies": {
