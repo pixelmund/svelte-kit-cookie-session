@@ -28,9 +28,12 @@ export interface SessionOptions {
 	expires?: number;
 
 	/**
-	 * 
-	 */
-
+	 *
+	 * Determines if the session cookie should be chunked.
+	 * If the session cookie exceeds the browser's maximum cookie size, it will be split into multiple cookies.
+	 * @default false
+	 *
+	 **/
 	chunked?: boolean;
 	
 	/**
