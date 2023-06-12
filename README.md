@@ -4,7 +4,7 @@
 
 ---
 
-**This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via a encrypted seal. This provides strong client/"stateless" sessions.
+**This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via an encrypted seal. This provides strong client/"stateless" sessions.
 
 The seal stored on the client contains the session data, not your server, making it a "stateless" session from the server point of view. This is a different take than `express-session` where the cookie contains a session ID to then be used to map data on the server-side.
 
@@ -190,7 +190,7 @@ Notes:
 
 Setting the session can be done in two ways, either via the `set` method or via the `update` method.
 
-`If the session already exists, the data get's updated but the expiration time stays the same`
+If the session already exists, the data gets updated but the expiration time stays the same.
 
 > src/routes/counter/+page.server.js
 
@@ -207,7 +207,7 @@ export const actions = {
 };
 ```
 
-`Sometimes you don't want to get the session data first only to increment a counter or some other value, that's where the update method comes in to play`
+Sometimes you don't want to get the session data first only to increment a counter or some other value, that's where the update method comes in to play.
 
 > src/routes/counter/+page.server.ts
 
