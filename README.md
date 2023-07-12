@@ -100,7 +100,7 @@ The secret is a private key or list of private keys you must pass at runtime, it
 
 ### Initializing
 
-> src/hooks.ts || src/hooks/index.ts
+> src/hooks.server.ts
 
 ```js
 import { handleSession } from 'svelte-kit-cookie-session';
