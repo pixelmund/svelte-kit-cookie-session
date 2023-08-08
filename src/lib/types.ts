@@ -1,6 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import type { MaybePromise } from '@sveltejs/kit/types/private';
-import type { BinaryLike as CBinaryLike } from 'crypto';
+import type { MaybePromise } from '@sveltejs/kit';
 
 export interface SessionOptions {
 	/**
@@ -12,6 +11,12 @@ export interface SessionOptions {
 	 *
 	 */
 	init?: (event: RequestEvent) => MaybePromise<Partial<App.PageData['session']>>;
+
+	/**
+	 * Weither or not the session should be saved initially.
+	 */
+	saveUninitialized?: boolean;
+
 	/**
 	 * The name of the cookie to use for the session.
 	 */
@@ -19,13 +24,19 @@ export interface SessionOptions {
 	/**
 	 * The secret(s) used to sign the session cookie.
 	 */
-	secret: CBinaryLike | { id: number; secret: CBinaryLike }[];
+	secret: BinaryLike | { id: number; secret: BinaryLike }[];
+
 	/**
 	 *
-	 *  The expiration time of the session in days.
+	 *  The expiration time of the session.
 	 *
 	 **/
 	expires?: number;
+
+	/**
+	 * expires in Minutes
+	*/
+	expires_in?: 'days' | 'hours' | 'minutes' | 'seconds';
 
 	/**
 	 *
@@ -35,7 +46,7 @@ export interface SessionOptions {
 	 *
 	 **/
 	chunked?: boolean;
-	
+
 	/**
 	 * Should the session refresh on every request?
 	 */
@@ -106,4 +117,4 @@ export interface PrivateSession {
 	'set-cookie'?: string | undefined;
 }
 
-export type BinaryLike = CBinaryLike;
+export type BinaryLike = string | Uint8Array | Uint16Array | ArrayBufferView | Buffer;

@@ -5,5 +5,5 @@ export const handle = handleSession({
 	// 	views: 0
 	// }),
 	chunked: true,
-	secret: 'A_VERY_SECRET_SECRET_USED_FOR_TESTING_THIS_LIB'
+	secret: '728hH4HPFNCduN6js58D3ZAfHeoRZc4v'
 });

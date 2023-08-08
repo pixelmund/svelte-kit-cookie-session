@@ -10,7 +10,7 @@ export const GET: RequestHandler = async (event) => {
 	await newSession.set(initialData);
 
 	const sessionWithWrongSecret = new CookieSession(event, {
-		secret: 'zL9X16gHNCt1uRuopnJuanfznf0ziczP'
+		secret: 'die79AYyyE9MYr3Rmbh4TeCphipyz6aT'
 	});
 	await sessionWithWrongSecret.init();
 	sessionWithWrongSecret.data;

@@ -1,8 +1,8 @@
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
-import { encrypt, decrypt } from 'zencrypt';
+import { encrypt, decrypt, getKey, generateNonce } from './crypto.js';
 import type { SessionOptions } from './types';
 import {
-	daysToMaxage,
+	expiresToMaxage,
 	maxAgeToDateOfExpiry,
 	normalizeConfig,
 	type NormalizedConfig
@@ -36,7 +36,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 
 	get data(): SessionType {
 		return this.#sessionData && !this.#state.invalidDate && !this.#state.destroy
-			? { ...this.#sessionData, expires: undefined }
+			? { ...this.#sessionData }
 			: this.#initialData;
 	}
 
@@ -48,6 +48,10 @@ export class CookieSession<SessionType = Record<string, any>> {
 		const { data, state } = await this.getSessionData();
 
 		this.#initialData = await this.#config.init(this.#event);
+
+		if (this.#config.saveUninitialized && !data && this.#initialData) {
+			await this.set(this.#initialData);
+		}
 
 		if (data) {
 			this.#sessionData = data;
@@ -145,14 +149,14 @@ export class CookieSession<SessionType = Record<string, any>> {
 		await this.setCookie(maxAge);
 	}
 
-	private async refreshSession(expiresInDays?: number) {
+	private async refreshSession(expires?: number) {
 		if (!this.#sessionData) {
 			return false;
 		}
 
 		this.#state.needsSync = true;
 
-		const newMaxAge = daysToMaxage(expiresInDays ? expiresInDays : this.#config.expiresInDays);
+		const newMaxAge = expiresToMaxage(expires ? expires : this.#config.expires, this.#config.expires_in);
 
 		this.#sessionData = {
 			...this.#sessionData,
@@ -180,8 +184,11 @@ export class CookieSession<SessionType = Record<string, any>> {
 			maxAge: maxAge
 		};
 
+		const nonce = generateNonce();
+		const key = getKey(this.#config.secrets[0].secret as string);
+
 		const encode = () => {
-			return encrypt(this.#sessionData, this.#config.secrets[0].secret as string);
+			return encrypt(key, nonce, this.#sessionData);
 		};
 
 		const id = String(this.#config.secrets[0].id);
@@ -278,7 +285,8 @@ export class CookieSession<SessionType = Record<string, any>> {
 
 		// Try to decode with the given sessionCookie and secret
 		try {
-			const decrypted = await decrypt(sessionCookie, secret.secret);
+			const key = getKey(secret.secret);
+			const decrypted = await decrypt(key, sessionCookie);
 
 			if (
 				decrypted &&

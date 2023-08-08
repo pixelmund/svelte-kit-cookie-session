@@ -4,7 +4,7 @@
 
 ---
 
-**This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via a encrypted seal. This provides strong client/"stateless" sessions.
+**This [SvelteKit](https://kit.svelte.dev) backend utility** allows you to create a session to be stored in the browser cookies via an encrypted seal. This provides strong client/"stateless" sessions.
 
 The seal stored on the client contains the session data, not your server, making it a "stateless" session from the server point of view. This is a different take than `express-session` where the cookie contains a session ID to then be used to map data on the server-side.
 
@@ -21,36 +21,17 @@ The seal stored on the client contains the session data, not your server, making
 1. [Accessing the Session](#accessing-the-session)
 1. [Destroying the Session](#destroying-the-session)
 1. [Refreshing the Session](#refresh-the-session-with-the-same-data-but-renew-the-expiration-date)
+1. [Configure Expiry Date](#configure-expiry-date)
+1. [Save unsaved session with the initial data](#save-unsaved-session-with-the-initial-data)
 
-**By default the cookie has an ⏰ expiration time of 7 days**, set via [`expires`] which should be a `number` in `days`.
-
----
+**By default the cookie has an ⏰ expiration time of 7 days**, set via [`expires`] which should be a `number` in either `days | hours | minutes | seconds` configurable by the `expires_in` option.
 
 ## Upgrading
 
-> :warning: SvelteKit removed support for `getSession` and the `session` store!
+#### Version 3.x to 4.x
 
-You can upgrade by creating a `+layout.server.js` file at the root and returning the session data from there.
-
-> src/routes/+layout.server.ts
-
-```js
-/** @type {import('./$types').LayoutServerLoad} */
-export const load = ({ locals }) => {
-	return {
-		session: locals.session.data // You can also use your old `getSession` function if you wish.
-	};
-};
-```
-
-You'll now have access to the `session` data by using `$page.data.session` or via the `parent` function from other `+page.server.js` load functions.
-
-```svelte
-<script>
-	import { page } from '$app/stores';
-	$: session = $page.data.session;
-</script>
-```
+The internal encryption library changed to the [@noble/ciphers](https://github.com/paulmillr/noble-ciphers) which is up to 35% faster than the previous implementation. The encryption should also now be even more secure.
+Because of the change of the encryption library we have an major version bump. You now have to provide a secret with an exact length of 32 characters or bytes. You can use [Password Generator](https://1password.com/password-generator/) to generate strong secrets. 
 
 ## Installation
 
@@ -60,47 +41,49 @@ Install into `dependencies`
 npm i svelte-kit-cookie-session
 
 yarn add svelte-kit-cookie-session
+
+pnpm add svelte-kit-cookie-session
 ```
 
 Update your `app.d.ts` file to look something like:
 
 ```ts
-/// <reference types="@sveltejs/kit" />
+import type { Session } from 'svelte-kit-cookie-session';
 
-interface SessionData {
+type SessionData = {
 	views: number;
-}
+};
 
-// See https://kit.svelte.dev/docs#typescript
+// See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
-declare namespace App {
-	interface Locals {
-		session: import('svelte-kit-cookie-session').Session<SessionData>;
+declare global {
+	namespace App {
+		// interface Error {}
+		interface Locals {
+			session: Session<SessionData>;
+		}
+		interface PageData {
+			// can add any properties here, return it from your root layout
+			session: SessionData;
+		}
+		// interface Platform {}
 	}
-
-	interface PageData {
-		session: SessionData;
-	}
-
-	interface Platform {}
-
-	interface PrivateEnv {}
-
-	interface PublicEnv {}
 }
+
+export {};
 ```
 
 ## Usage
 
 You can find some examples in the src/routes/tests folder [Tests](/src/routes/tests).
 
-The secret is a private key or list of private keys you must pass at runtime, it should be at least `32 characters` long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
+The secret is a private key or list of private keys you must pass at runtime, it should be `32 characters` long. Use [Password Generator](https://1password.com/password-generator/) to generate strong secrets.
 
 ⚠️ You should always store secrets in secret environment variables on your platform.
 
 ### Initializing
 
-> src/hooks.ts || src/hooks/index.ts
+> src/hooks.server.ts
 
 ```js
 import { handleSession } from 'svelte-kit-cookie-session';
@@ -112,14 +95,14 @@ export const handle = handleSession({
 	// 	views: 0
 	// }),
 	// chunked: true // Optional, default is false - if true, the session will be chunked into multiple cookies avoiding the browser limit for cookies
-	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+	secret: 'SOME_COMPLEX_SECRET_32_CHARSLONG'
 });
 
 // Or pass your handle function as second argument to handleSession
 
 export const handle = handleSession(
 	{
-		secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+		secret: 'SOME_COMPLEX_SECRET_32_CHARSLONG'
 	},
 	({ event, resolve }) => {
 		// event.locals is populated with the session `event.locals.session`
@@ -134,7 +117,7 @@ In case you're using [sequence()](https://kit.svelte.dev/docs/modules#sveltejs-k
 
 ```js
 const sessionHandler = handleSession({
-	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+	secret: 'SOME_COMPLEX_SECRET_32_CHARSLONG'
 });
 export const handle = sequence(sessionHandler, ({ resolve, event }) => {
 	// event.locals is populated with the session `event.locals.session`
@@ -159,7 +142,7 @@ Then you can use multiple secrets:
 
 ```js
 export const handle = handleSession({
-	secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+	secret: 'SOME_COMPLEX_SECRET_32_CHARSLONG'
 });
 ```
 
@@ -170,11 +153,11 @@ export const handle = handleSession({
 	secret: [
 		{
 			id: 2,
-			secret: 'SOME_OTHER_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+			secret: 'SOME_OTHER_COMPLEX_SECR_32_CHARS'
 		},
 		{
 			id: 1,
-			secret: 'SOME_COMPLEX_SECRET_AT_LEAST_32_CHARS'
+			secret: 'SOME_COMPLEX_SECRET_32_CHARSLONG'
 		}
 	]
 });
@@ -190,7 +173,7 @@ Notes:
 
 Setting the session can be done in two ways, either via the `set` method or via the `update` method.
 
-`If the session already exists, the data get's updated but the expiration time stays the same`
+`If the session already exists, the data gets updated but the expiration time stays the same`
 
 > src/routes/counter/+page.server.js
 
@@ -207,7 +190,7 @@ export const actions = {
 };
 ```
 
-`Sometimes you don't want to get the session data first only to increment a counter or some other value, that's where the update method comes in to play`
+`Sometimes you don't want to get the session data first only to increment a counter or some other value, that's where the update method comes in to play.`
 
 > src/routes/counter/+page.server.ts
 
@@ -301,5 +284,27 @@ You can also specify a percentage from 1 to 100 which refreshes the session when
 ```js
 handleSession({
 	rolling: true // or 1-100 for percentage o the expiry date met,
+});
+```
+
+### Configure Expiry Date
+
+You can configure the expiry date of the session cookie via the `expires` option. It should be a `number` in either `days | hours | minutes | seconds`.
+
+```js
+handleSession({
+	expires: 160, // 160 minutes
+	expires_in: 'minutes', // minutes | hours | days | seconds
+});
+```
+
+### Save unsaved session with the initial data
+
+You can save unsaved sessions with the initial data via the `saveUninitialized` option. It should be a `boolean` and the default is `false`.
+
+```js
+handleSession({
+	init: () => ({ views: 0 }),
+	saveUninitialized: true,
 });
 ```

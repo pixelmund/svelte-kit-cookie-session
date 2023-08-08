@@ -1,13 +1,20 @@
 import type { BinaryLike, SessionOptions } from './types';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { MaybePromise } from '@sveltejs/kit/types/private';
+import type { MaybePromise } from '@sveltejs/kit';
 
-export function daysToMaxage(days: number) {
-	var today = new Date();
-	var resultDate = new Date(today);
-	resultDate.setDate(today.getDate() + days);
-
-	return resultDate.getTime() / 1000 - today.getTime() / 1000;
+export function expiresToMaxage(expires: number, expires_in: 'days' | 'hours' | 'minutes' | 'seconds') {
+	switch (expires_in) {
+		case 'days':
+			return expires * 24 * 60 * 60;
+		case 'hours':
+			return expires * 60 * 60;
+		case 'minutes':
+			return expires * 60;
+		case 'seconds':
+			return expires;
+		default:
+			return expires;
+	}
 }
 
 export function maxAgeToDateOfExpiry(maxAge: number) {
@@ -21,8 +28,10 @@ export interface Secret {
 
 export interface NormalizedConfig {
 	init: (event: RequestEvent) => MaybePromise<any>;
+	saveUninitialized: boolean;
 	key: string;
-	expiresInDays: number;
+	expires: number;
+	expires_in: 'days' | 'hours' | 'minutes' | 'seconds';
 	chunked: boolean;
 	cookie: {
 		maxAge: number;
@@ -45,10 +54,12 @@ export function normalizeConfig(options: SessionOptions, isSecure: boolean = fal
 
 	return {
 		init,
+		saveUninitialized: options?.saveUninitialized ?? false,
 		key: options.key || 'kit.session',
-		expiresInDays: options.expires || 7,
+		expires: options.expires ? options.expires : 7,
+		expires_in: options.expires_in ? options.expires_in : 'days',
 		cookie: {
-			maxAge: daysToMaxage(options.expires || 7),
+			maxAge: expiresToMaxage(options.expires || 7, options.expires_in || 'days'),
 			httpOnly: options?.cookie?.httpOnly ?? true,
 			sameSite: options?.cookie?.sameSite || 'lax',
 			path: options?.cookie?.path || '/',

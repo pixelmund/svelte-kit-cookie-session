@@ -12,7 +12,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const sessionWithNewSecret = new CookieSession(event, {
 		secret: [
-			{ id: 2, secret: 'JmLy4vMnwmQ75zhSJPc7Ud6U0anKnDZZ' },
+			{ id: 2, secret: '728hH4HPFNCduN6js58D3ZAfHeoRZc4v' },
 			{ id: 1, secret: SECRET }
 		]
 	});

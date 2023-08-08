@@ -21,6 +21,30 @@ test('[FEAT]: Setting the session', async ({ page, request, context }) => {
 	expect(await page.textContent('#session-store-views')).toBe('42');
 });
 
+test('[FEAT]: Expires in configurable', async ({ page, request, context }) => {
+	await context.clearCookies();
+
+	const response = await request.get('/tests/set-session/expires-in-configurable');
+
+	await expect(response).toBeOK();
+
+	const data = await response.json();
+
+	expect(data.ok).toBe(true);
+});
+
+test('[FEAT]: Save uninititialized', async ({ page, request, context }) => {
+	await context.clearCookies();
+
+	const response = await request.get('/tests/save-uninitialized');
+
+	await expect(response).toBeOK();
+
+	const data = await response.json();
+
+	expect(data.ok).toBe(true);
+});
+
 test('[FEAT]: Updating the session', async ({ page, request, context }) => {
 	await context.clearCookies();
 
