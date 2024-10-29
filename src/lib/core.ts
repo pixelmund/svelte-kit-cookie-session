@@ -86,7 +86,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 		let maxAge = this.#config.cookie.maxAge;
 
 		if (this.#sessionData?.expires) {
-			maxAge = new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
+			maxAge = Math.round(new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000);
 		}
 
 		this.#state.needsSync = true;
@@ -143,7 +143,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 		let maxAge = this.#config.cookie.maxAge;
 
 		if (this.#sessionData?.expires) {
-			maxAge = new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
+			maxAge = Math.round(new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000);
 		}
 
 		await this.setCookie(maxAge);
