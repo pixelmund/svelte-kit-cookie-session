@@ -5,11 +5,11 @@ import type { MaybePromise } from '@sveltejs/kit';
 export function expiresToMaxage(expires: number, expires_in: 'days' | 'hours' | 'minutes' | 'seconds') {
 	switch (expires_in) {
 		case 'days':
-			return expires * 24 * 60 * 60;
+			return Math.round(expires * 24 * 60 * 60);
 		case 'hours':
-			return expires * 60 * 60;
+			return Math.round(expires * 60 * 60);
 		case 'minutes':
-			return expires * 60;
+			return Math.round(expires * 60);
 		case 'seconds':
 			return expires;
 		default:
