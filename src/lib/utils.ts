@@ -2,7 +2,10 @@ import type { BinaryLike, SessionOptions } from './types';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { MaybePromise } from '@sveltejs/kit';
 
-export function expiresToMaxage(expires: number, expires_in: 'days' | 'hours' | 'minutes' | 'seconds') {
+export function expiresToMaxage(
+	expires: number,
+	expires_in: 'days' | 'hours' | 'minutes' | 'seconds'
+) {
 	switch (expires_in) {
 		case 'days':
 			return Math.round(expires * 24 * 60 * 60);
@@ -40,12 +43,17 @@ export interface NormalizedConfig {
 		path: string;
 		domain: string | undefined;
 		secure: boolean;
+		priority?: 'low' | 'medium' | 'high';
+		partitioned?: boolean;
 	};
 	rolling: number | boolean | undefined;
 	secrets: Array<Secret>;
 }
 
-export function normalizeConfig(options: SessionOptions, isSecure: boolean = false): NormalizedConfig {
+export function normalizeConfig(
+	options: SessionOptions,
+	isSecure: boolean = false
+): NormalizedConfig {
 	if (options.secret == null) {
 		throw new Error('Please provide at least one secret');
 	}
@@ -64,7 +72,9 @@ export function normalizeConfig(options: SessionOptions, isSecure: boolean = fal
 			sameSite: options?.cookie?.sameSite || 'lax',
 			path: options?.cookie?.path || '/',
 			domain: options?.cookie?.domain || undefined,
-			secure: options?.cookie?.secure ?? isSecure
+			secure: options?.cookie?.secure ?? isSecure,
+			priority: options?.cookie?.priority ?? undefined,
+			partitioned: options?.cookie?.partitioned ?? undefined
 		},
 		chunked: options?.chunked ?? false,
 		rolling: options?.rolling ?? false,

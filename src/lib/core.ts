@@ -85,7 +85,9 @@ export class CookieSession<SessionType = Record<string, any>> {
 		let maxAge = this.#config.cookie.maxAge;
 
 		if (this.#sessionData?.expires) {
-			maxAge = Math.round(new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000);
+			maxAge = Math.round(
+				new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000
+			);
 		}
 
 		this.#state.needsSync = true;
@@ -142,7 +144,9 @@ export class CookieSession<SessionType = Record<string, any>> {
 		let maxAge = this.#config.cookie.maxAge;
 
 		if (this.#sessionData?.expires) {
-			maxAge = Math.round(new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000);
+			maxAge = Math.round(
+				new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000
+			);
 		}
 
 		await this.setCookie(maxAge);
@@ -183,7 +187,9 @@ export class CookieSession<SessionType = Record<string, any>> {
 			sameSite: this.#config.cookie.sameSite,
 			secure: this.#config.cookie.secure,
 			domain: this.#config.cookie?.domain,
-			maxAge: maxAge
+			maxAge: maxAge,
+			priority: this.#config.cookie.priority,
+			partitioned: this.#config.cookie.partitioned
 		};
 
 		const nonce = generateNonce();
@@ -235,7 +241,10 @@ export class CookieSession<SessionType = Record<string, any>> {
 				path: this.#config.cookie.path,
 				sameSite: this.#config.cookie.sameSite,
 				secure: this.#config.cookie.secure,
-				domain: this.#config.cookie?.domain
+				domain: this.#config.cookie?.domain,
+				priority: this.#config.cookie.priority,
+				// @ts-expect-error need to update sveltekit types
+				partitioned: this.#config.cookie.partitioned
 			});
 		}
 	}

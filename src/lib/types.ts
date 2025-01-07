@@ -35,7 +35,7 @@ export interface SessionOptions {
 
 	/**
 	 * expires in Minutes
-	*/
+	 */
 	expires_in?: 'days' | 'hours' | 'minutes' | 'seconds';
 
 	/**
@@ -99,6 +99,25 @@ export interface SessionOptions {
 		 * not have an HTTPS connection.
 		 */
 		secure?: boolean | undefined;
+		/**
+		 * Enables the [`Partitioned` `Set-Cookie` attribute](https://tools.ietf.org/html/draft-cutler-httpbis-partitioned-cookies/).
+		 * When enabled, clients will only send the cookie back when the current domain _and_ top-level domain matches.
+		 *
+		 * This is an attribute that has not yet been fully standardized, and may change in the future.
+		 * This also means clients may ignore this attribute until they understand it. More information
+		 * about can be found in [the proposal](https://github.com/privacycg/CHIPS).
+		 */
+		partitioned?: boolean;
+		/**
+		 * Specifies the value for the [`Priority` `Set-Cookie` attribute](https://tools.ietf.org/html/draft-west-cookie-priority-00#section-4.1).
+		 *
+		 * - `'low'` will set the `Priority` attribute to `Low`.
+		 * - `'medium'` will set the `Priority` attribute to `Medium`, the default priority when not set.
+		 * - `'high'` will set the `Priority` attribute to `High`.
+		 *
+		 * More information about priority levels can be found in [the specification](https://tools.ietf.org/html/draft-west-cookie-priority-00#section-4.1).
+		 */
+		priority?: 'low' | 'medium' | 'high';
 	};
 }
 
