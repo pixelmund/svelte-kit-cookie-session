@@ -47,9 +47,8 @@ export class CookieSession<SessionType = Record<string, any>> {
 	async init() {
 		const { data, state } = await this.getSessionData();
 
-		this.#initialData = await this.#config.init(this.#event);
-
-		if (this.#config.saveUninitialized && !data && this.#initialData) {
+		if (this.#config.saveUninitialized && !data) {
+			this.#initialData = await this.#config.init(this.#event);
 			await this.set(this.#initialData);
 		}
 
@@ -86,7 +85,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 		let maxAge = this.#config.cookie.maxAge;
 
 		if (this.#sessionData?.expires) {
-			maxAge = new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
+			maxAge = Math.round(new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000);
 		}
 
 		this.#state.needsSync = true;
@@ -143,7 +142,7 @@ export class CookieSession<SessionType = Record<string, any>> {
 		let maxAge = this.#config.cookie.maxAge;
 
 		if (this.#sessionData?.expires) {
-			maxAge = new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000;
+			maxAge = Math.round(new Date(this.#sessionData.expires).getTime() / 1000 - new Date().getTime() / 1000);
 		}
 
 		await this.setCookie(maxAge);
@@ -156,7 +155,10 @@ export class CookieSession<SessionType = Record<string, any>> {
 
 		this.#state.needsSync = true;
 
-		const newMaxAge = expiresToMaxage(expires ? expires : this.#config.expires, this.#config.expires_in);
+		const newMaxAge = expiresToMaxage(
+			expires ? expires : this.#config.expires,
+			this.#config.expires_in
+		);
 
 		this.#sessionData = {
 			...this.#sessionData,
